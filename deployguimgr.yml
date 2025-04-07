@@ -25,21 +25,21 @@ CONTAINER:
     RAS_INTERFACE_IP: 10.23.16.1
 
     # ------------------------------------------------------
-    # SSS API Port, Default 46443
+    # SSS Deploy from GUI Port, Default 9090
     # ------------------------------------------------------
-    DEPLOY_GUI_PORT: 46443
+    DEPLOY_GUI_PORT: 9090
 
     # ------------------------------------------------------
     # Container image version detail
     # ------------------------------------------------------
     # Image Name
-    IMAGE_NAME: quay.io/sumitkuo_ibm/sss_deploygui_6.2.3.0
+    IMAGE_NAME: cp.stg.icr.io/cp/scalesystem/sss_deploygui
 
     # Image Version
-    IMAGE_VERSION: 0121-04
+    IMAGE_VERSION: 6.2.3.0
 
     # ----------------------------------
     # log and backup location. These are the location on the container hosting node.
     # ----------------------------------
-    LOG: /tmp/log
-    BKUP: /tmp/backup
+    LOG: /home/guiadmin/log
+    BKUP: /home/guiadmin/backup

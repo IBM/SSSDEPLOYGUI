@@ -30,6 +30,11 @@ CONTAINER:
     DEPLOY_GUI_PORT: 9090
 
     # ------------------------------------------------------
+    # SSS API SSH Port, Default 30022, Development purpose only.
+    # ------------------------------------------------------
+    # SSH_PORT: 30022
+
+    # ------------------------------------------------------
     # Container image version detail
     # ------------------------------------------------------
     # Image Name
@@ -41,5 +46,5 @@ CONTAINER:
     # ----------------------------------
     # log and backup location. These are the location on the container hosting node.
     # ----------------------------------
-    LOG: /home/guiadmin/log
-    BKUP: /home/guiadmin/backup
+    LOG: /home/deployguiadmin/log
+    BKUP: /home/deployguiadmin/backup

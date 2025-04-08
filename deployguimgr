@@ -21,11 +21,13 @@ def readconf(input0):
     global IMAGE_NAME
     global IMAGE_VERSION
     global DEPLOY_GUI_PORT
+    global SSH_PORT
 
     UTILITY_HOSTNAME = None
     IMAGE_NAME = None
     IMAGE_VERSION = None
     DEPLOY_GUI_PORT = None
+    SSH_PORT = None
 
     with open(input0.config_file, 'r') as ymlfile:
         # cfg = yaml.safe_load(ymlfile, Loader=yaml.SafeLoader)
@@ -58,6 +60,12 @@ def readconf(input0):
     if DEPLOY_GUI_PORT is None:
         print("-- [ERROR] API Server port should be provided inside deployguimgr.yml file... --")
         sys.exit(1)
+
+    # ESS Deployment GUI container SSH Port, default 30022
+    if "SSH_PORT" in cfg["CONTAINER"]:
+        SSH_PORT = str(cfg["CONTAINER"]["SSH_PORT"])
+    if SSH_PORT is None:
+        SSH_PORT = 30022
 
     checkdir()
 
@@ -150,6 +158,7 @@ def clean_nftables():
 def run_container(force, is_startdeployguicont=False):
     global UTILITY_HOSTNAME
     global DEPLOY_GUI_PORT
+    global SSH_PORT
     global IMAGE_NAME
     global IMAGE_VERSION
 
@@ -227,7 +236,7 @@ def run_container(force, is_startdeployguicont=False):
         # ------------------------------------
         # Forming correct podman create command.
         # ------------------------------------
-        cmd = "podman create --syslog" + \
+        cmd = "podman create --privileged --syslog" + \
             " --hostname=\"" + cfg["CONTAINER"]["CONTAINER_HOSTNAME"] + '.' + cfg["CONTAINER"]["CONTAINER_DOMAIN_NAME"] + "\"" + \
             " --name " + cfg["CONTAINER"]["CONTAINER_HOSTNAME"] + \
             " -v /dev/log:/dev/log" + \
@@ -237,7 +246,7 @@ def run_container(force, is_startdeployguicont=False):
             " -v /sys/fs/cgroup:/sys/fs/cgroup:ro"
 
         container_env_details = \
-            " --env \"DEPLOY_FROM_GUI_CONTAINER=Y" + \
+            " --env \"DEPLOY_FROM_GUI_CONTAINER=Y\"" + \
             " --env \"UTILITY_HOSTNAME=" + UTILITY_HOSTNAME + "\"" + \
             " --env \"UTILITY_CAMPUS_IP=" + cfg["CONTAINER"]["CAMPUS_INTERFACE_IP"] + "\"" + \
             " --env \"UTILITY_RAS_IP=" + cfg["CONTAINER"]["RAS_INTERFACE_IP"] + "\"" + \
@@ -250,7 +259,8 @@ def run_container(force, is_startdeployguicont=False):
             cmd += network
 
         cmd += container_env_details
-        container_ports_details = " -p " + DEPLOY_GUI_PORT + ":" + "443" + "/tcp"
+        container_ports_details = " -p " + DEPLOY_GUI_PORT + ":" + "443" + "/tcp" + \
+            " -p " + SSH_PORT + ":" + "22" + "/tcp"
         cmd += container_ports_details
 
         cmd += " --sysctl net.ipv6.conf.all.disable_ipv6=1"

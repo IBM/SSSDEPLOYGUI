@@ -65,7 +65,7 @@ def readconf(input0):
     if "SSH_PORT" in cfg["CONTAINER"]:
         SSH_PORT = str(cfg["CONTAINER"]["SSH_PORT"])
     if SSH_PORT is None:
-        SSH_PORT = 30022
+        SSH_PORT = "30022"
 
     checkdir()
 

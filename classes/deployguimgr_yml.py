@@ -9,8 +9,8 @@
 #
 # -----------------------------------------------------------------------------
 #
-# File name: apimgr_yml.py
-# Description: Class to check and create apimgr YML file
+# File name: deployguimgr_yml.py
+# Description: Class to check and create deployguimgr YML file
 # -----------------------------------------------------------------------------
 #
 # Changelog:
@@ -49,25 +49,28 @@ RAS_NETBLOCK = "10.23.16.0/29"
 # RAS bridge IP
 RAS_IP = "10.23.16.1"
 
-STATIC_apimgr_YML = {
-    'CONTAINER_HOSTNAME': 'utilityBareMetal-api-official',
+STATIC_deployguimgr_YML = {
+    'CONTAINER_HOSTNAME': 'utilityBareMetal-deploygui-official',
     'CAMPUS_INTERFACE': 'campus',
     'RAS_INTERFACE': 'virbr1',
     'RAS_INTERFACE_IP': '10.23.16.1',
-    'LOG': '/tmp/log',
-    'BKUP': '/tmp/backup'
+    'IMAGE_NAME': 'cp.stg.icr.io/cp/scalesystem/sss_deploygui',
+    'SSH_PORT': '30022',
+    'LOG': '/home/deployguiadmin/log',
+    'BKUP': '/home/deployguiadmin/backup'
 }
 
-CONFIG_apimgr_YML = {
-    'CONTAINER_DOMAIN_NAME': 'localdomain',
+CONFIG_deployguimgr_YML = {
+    'CONTAINER_DOMAIN_NAME': 'gpfs.local',
     'UTILITY_HOSTNAME': 'utilityBareMetal',
-    'CAMPUS_INTERFACE_IP': '192.168.100.10'
+    'CAMPUS_INTERFACE_IP': '192.168.100.10',
+    'IMAGE_VERSION': '6.2.3.0'
 }
 
 
-class apimgr_yml(object):
+class deployguimgr_yml(object):
     """
-        Class to manage apimgr YML file creation, checks and start the container
+        Class to manage deployguimgr YML file creation, checks and start the container
 
         RC 0  = Success
         RC 1  = Generic error
@@ -84,15 +87,15 @@ class apimgr_yml(object):
         RC 12 = Failure writing YML file
         RC 13 = Initial file does not have required fields or has wrong values for them
         RC 14 = FREE
-        RC 15 = Tool is not run as api user
+        RC 15 = Tool is not run as deployguiadmin user
         RC 16 = FREE
         RC 17 = FREE
         RC 18 = FREE
         RC 19 = FREE
         RC 20 = FREE
-        RC 21 = Cannot copy apimgr into classes directory
-        RC 22 = Cannot import apimgr
-        RC 23 = Cannot run apimgr readconf
+        RC 21 = Cannot copy deployguimgr into classes directory
+        RC 22 = Cannot import deployguimgr
+        RC 23 = Cannot run deployguimgr readconf
         RC 24 = Start container returned an error
         RC 25 = FREE
         RC 26 = podman binary does not exist
@@ -125,20 +128,21 @@ class apimgr_yml(object):
 
     def __init__(
             self,
-            verbose
+            verbose,
+            filename
             ):
-        self.filename = "apimgr.yml"
+        self.filename = "deployguimgr.yml"
         self.verbose = verbose
         self.output_dir = "./logs"
         self.total_errors = 0
         self.merged_cfg = {}
         self.st_time = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-        self.log_file = self.output_dir + 'API_' + self.st_time + ".log"
+        self.log_file = self.output_dir + 'DEPLOYGUI_' + self.st_time + ".log"
         self.run_log = self.__start_logger()
-        self.static_apimgr_yml = STATIC_apimgr_YML
-        self.config_apimgr_yml = CONFIG_apimgr_YML
+        self.static_deployguimgr_yml = STATIC_deployguimgr_YML
+        self.config_deployguimgr_yml = CONFIG_deployguimgr_YML
         currentDirectory = os.getcwd()
-        self.my_dir = currentDirectory.split("/")[-1]
+        self.IMAGE_TARBALL = filename
 
         self.cfg_loaded, self.cfg = self.__load_yml_file()
         if self.cfg_loaded:
@@ -147,7 +151,7 @@ class apimgr_yml(object):
             )
         else:
             self.run_log.error(
-                "There was an issue loading the apimgr.yml file"
+                "There was an issue loading the deployguimgr.yml file"
             )
             self.run_log.debug(
                 "Going to terminate with RC 1"
@@ -209,7 +213,9 @@ class apimgr_yml(object):
                 self.run_log.error("virbr1 / RAS interface does not exist in this system")
             sys.exit(4)
 
-
+        # Lets deal with IMAGE_NAME if applicable
+        self.IMAGE_NAME = self.container['IMAGE_NAME']
+        self.IMAGE_VERSION = self.__ask_IMAGE_VERSION()
 
         self.run_log.debug(
             "We use UTILITY hostname to derivate names for Management. Safe option."
@@ -217,15 +223,15 @@ class apimgr_yml(object):
         self.UTILITY_HOSTNAME = self.__get_UTILITY_HOSTNAME()
         self.DNS_domain = self.__get_sys_domain()
 
-        # Lets copy apimgr into classes dir
-        self.__copy_apimgr_into_classes()
+        # Lets copy deployguimgr into classes dir
+        self.__copy_deployguimgr_into_classes()
         self.__podman_bin_exists()
         self.__nmcli_bin_exists()
 
-        self.__SSR_SQL_check()
+        # self.__SSR_SQL_check()
 
 
-    def startAPIcont(self):
+    def startDeployGUIContainer(self):
         # Print logs message
         print(
             "\nDetailed logs are located on " +
@@ -233,17 +239,17 @@ class apimgr_yml(object):
             " directory\n"
         )
         # First we check we are root or root alike
-        self.__check_apiadmin_user()
+        self.__check_deployguiadmin_user()
 
         # Hardcoded hostname name
-        cont_hostname = self.static_apimgr_yml['CONTAINER_HOSTNAME']
+        cont_hostname = self.static_deployguimgr_yml['CONTAINER_HOSTNAME']
 
         container_hostname = {"CONTAINER_HOSTNAME": cont_hostname}
         contResolvable = self.__checkContNotResolvable(cont_hostname)
         if contResolvable:
             self.run_log.error(
                 "Container name can be resolved. This is not supported. " +
-                "Do not add the API container to /etc/hosts nor DNS, and try again."
+                "Do not add the Deployment GUI container to /etc/hosts nor DNS, and try again."
             )
             self.run_log.debug(
                 "Going to exit with RC=51"
@@ -269,10 +275,11 @@ class apimgr_yml(object):
         self.merged_cfg.update({'CONTAINER_DOMAIN_NAME': self.DNS_domain})
         self.merged_cfg.update({'UTILITY_HOSTNAME': self.UTILITY_HOSTNAME})
         self.merged_cfg.update({'CAMPUS_INTERFACE_IP': self.CAMPUS_IPv4})
+        self.merged_cfg.update({'IMAGE_VERSION': self.IMAGE_VERSION})
         #self.merged_cfg.update({'RAS_INTERFACE_IP': self.RAS_IPv4})
 
         # the static entries. We should readapt the function that does this
-        self.merged_cfg.update(self.static_apimgr_yml)
+        self.merged_cfg.update(self.static_deployguimgr_yml)
         self.run_log.debug(
             "Merge configurable parameters to be written"
         )
@@ -311,7 +318,7 @@ class apimgr_yml(object):
             )
         else:
             self.run_log.error(
-                "There was an issue loading the apimgr.yml file"
+                "There was an issue loading the deployguimgr.yml file"
             )
             self.run_log.debug(
                 "Going to terminate with RC 1"
@@ -332,6 +339,31 @@ class apimgr_yml(object):
         # Few things can be tweaked about reloads and static
         # Not a big deal yet as check is fast
         return entries_NOK
+
+    def __ask_IMAGE_VERSION(self):
+        # User wants to change hostname we change or exit if cancel
+        try:
+            while True:
+                self.run_log.debug(
+                    "Going to ask the user for a Image Version"
+                )
+                IMAGE_VERSION_user = input(
+                    "Please type a Image Version : "
+                )
+                if IMAGE_VERSION_user == "6.2.3.0":
+                    break
+                else:
+                    print("\nImage name should be 6.2.3.0")
+            return IMAGE_VERSION_user
+        except KeyboardInterrupt:
+            print("")
+            self.run_log.error(
+                "User cancelled EMS hostname input\n"
+            )
+            self.run_log.debug(
+                "Going to terminate with RC 6"
+            )
+            sys.exit(6)
 
     def __write_YML_file(self):
         # We save original file as .bak and create new with gathered data
@@ -507,22 +539,22 @@ class apimgr_yml(object):
                 )
                 sys.exit(2)
 
-    def __copy_apimgr_into_classes(self):
-        if os.path.isfile("classes/apimgr.py") == False:
+    def __copy_deployguimgr_into_classes(self):
+        if os.path.isfile("classes/deployguimgr.py") == False:
             self.run_log.debug(
-                "apimgr.py does not exist inside classes directory"
+                "deployguimgr.py does not exist inside classes directory"
             )
             self.run_log.debug(
-                "Going to copy apimgr inside classes directory as apimgr.py"
+                "Going to copy deployguimgr inside classes directory as apideployguimgrmgr.py"
             )
             try:
-                shutil.copyfile("apimgr", "classes/apimgr.py")
+                shutil.copyfile("deployguimgr", "classes/deployguimgr.py")
                 self.run_log.debug(
-                    "apimgr is copied inside classes directory as apimgr.py"
+                    "deployguimgr is copied inside classes directory as deployguimgr.py"
                 )
             except BaseException:
                 self.run_log.error(
-                    "Cannot copy apimgr into classes directory"
+                    "Cannot copy deployguimgr into classes directory"
                 )
                 self.run_log.debug(
                     "Going to terminate with RC 21"
@@ -530,7 +562,7 @@ class apimgr_yml(object):
                 sys.exit(21)
         else:
             self.run_log.debug(
-                "apimgr.py does already exist inside classes directory"
+                "deployguimgr.py does already exist inside classes directory"
             )
 
     def __start_logger(self):
@@ -548,9 +580,8 @@ class apimgr_yml(object):
             console.setLevel(logging.INFO)
         console.setFormatter(logging.Formatter(sv_log_format))
         logging.getLogger('').addHandler(console)
-        apimgr_yml_log = logging.getLogger(self.filename)
-        return apimgr_yml_log
-
+        deployguimgr_yml_log = logging.getLogger(self.filename)
+        return deployguimgr_yml_log
 
     def __load_yml_file(self):
         cfg_loaded = False
@@ -594,7 +625,6 @@ class apimgr_yml(object):
             )
             cfg_loaded = False
         return (cfg_loaded, cfg)
-
 
     def __is_valid_FQDN(self, hostname, domain):
         # We check is RFC1035 + RFC3696 prefered options
@@ -708,9 +738,9 @@ class apimgr_yml(object):
             self.filename
         )
         # We do not care about values just that all keys are there
-        for key in self.config_apimgr_yml.keys():
+        for key in self.config_deployguimgr_yml.keys():
             try:  # In case key is missing in file
-                if self.container[key] == self.config_apimgr_yml[key]:
+                if self.container[key] == self.config_deployguimgr_yml[key]:
                     # We have the key, irrelevant value
                     config_keys_OK = True
                     self.run_log.debug(
@@ -744,7 +774,7 @@ class apimgr_yml(object):
                 self.run_log.error(
                     "Some undetermined error when checking current YML " +
                     "file happened. If available please try to use a " +
-                    "previous version of apimgr.yml file from ./logs/. " +
+                    "previous version of deployguimgr.yml file from ./logs/. " +
                     "If that is not an option use the manufacturing base " +
                     "file. And if that is neither fixing this, please " +
                     "contact IBM support and attach all the contents of " +
@@ -771,7 +801,7 @@ class apimgr_yml(object):
                 "Static entries passed the test. " +
                 "Merging them into the config to write"
             )
-            self.merged_cfg.update(self.static_apimgr_yml)
+            self.merged_cfg.update(self.static_deployguimgr_yml)
             self.run_log.debug("Static entries merged into config to write")
 
     def __check_static_vars(self):
@@ -782,9 +812,9 @@ class apimgr_yml(object):
         )
         # We do a check for the non configurable parameters
         static_entries_error = False
-        for key in self.static_apimgr_yml.keys():
+        for key in self.static_deployguimgr_yml.keys():
             try:  # In case key is missing in file
-                if str(self.container[key]) != str(self.static_apimgr_yml[key]):
+                if str(self.container[key]) != str(self.static_deployguimgr_yml[key]):
                     # We have the key but is not the same
                     static_entries_error = True
                     self.total_errors += 1
@@ -796,7 +826,7 @@ class apimgr_yml(object):
                         " but value " +
                         str(self.container[key]) +
                         " is not the expected one of " +
-                        self.static_apimgr_yml[key]
+                        self.static_deployguimgr_yml[key]
                     )
                 else:
                     self.run_log.debug(
@@ -834,7 +864,6 @@ class apimgr_yml(object):
             )
         return static_entries_error
 
-
     def __check_IP_in_netblock(self, IP, net_block):
         self.run_log.debug(
             "Going to check if IP " +
@@ -866,7 +895,6 @@ class apimgr_yml(object):
                 str(net_block)
             )
         return is_in
-
 
     def __check_IP(self, IP_to_check):
         self.run_log.debug(
@@ -912,7 +940,6 @@ class apimgr_yml(object):
                 " and we do not accept it"
             )
         return FQDN_is_OK
-
 
     def __check_name_IP(self, hostname, ip_address):
         all_OK = True
@@ -1229,32 +1256,30 @@ class apimgr_yml(object):
 
         return config_entries_error
 
-
-    def __check_apiadmin_user(self):
+    def __check_deployguiadmin_user(self):
         self.run_log.debug(
-            "Going to check if this tool is been run with apiadmin user"
+            "Going to check if this tool is been run with deployguiadmin user"
         )
         username = os.environ.get('USER') or os.environ.get('USERNAME')
-        if username == "apiadmin":
+        if username == "deployguiadmin":
             self.run_log.debug(
-                "This tool is been run with apiadmin privileges"
+                "This tool is been run with deployguiadmin privileges"
             )
         else:
             self.run_log.error(
-                "This tool is NOT to been run with apiadmin user"
+                "This tool is NOT to been run with deployguiadmin user"
             )
             self.run_log.debug(
                 "Going to terminate with RC 15"
             )
             sys.exit(15)
 
-
     def prep_container(self):
         # Every start we check that not running already, if not running we delete the image
-        contIsUp = self.__alreadyUP("api-official")
+        contIsUp = self.__alreadyUP("deploygui-official")
         if contIsUp:
             self.run_log.error(
-                "We cannot start the API container as seems that is already UP."
+                "We cannot start the Deployment GUI container as seems that is already UP."
             )
             self.run_log.debug(
                 "Going to exit with RC=9"
@@ -1264,10 +1289,10 @@ class apimgr_yml(object):
             self.run_log.debug(
                 "Container is not UP, we will delete the image before start."
             )
-            imgDeleted = self.__delete_image("api-official")
+            imgDeleted = self.__delete_image("deploygui-official")
             if imgDeleted:
                 self.run_log.debug(
-                    "API image has been deleted, we continue."
+                    "Deployment GUI image has been deleted, we continue."
                 )
             else:
                 self.run_log.error(
@@ -1278,119 +1303,115 @@ class apimgr_yml(object):
                 )
                 sys.exit(10)
         # Users wants that we prep the container
-        # This requires apimgr -i, apimgr -n
+        # This requires deployguimgr -i, deployguimgr -n
         self.run_log.debug(
-            "Starting check if apimgr exists"
+            "Starting check if apideployguimgrmgr exists"
         )
-        file_exists = os.path.isfile("apimgr")
+        file_exists = os.path.isfile("deployguimgr")
         if file_exists:
             self.run_log.debug(
-                "Completed check for apimgr and exists"
+                "Completed check for deployguimgr and exists"
             )
         else:
             self.run_log.debug(
-                "Completed check for apimgr and does not exist"
+                "Completed check for deployguimgr and does not exist"
             )
             return False
 
         # Lets install the image, it might be there already
-
-
-        image_file = self.my_dir.replace(".dir", ".tar")
-        self.run_log.debug(
-            "Going to check if " +
-            image_file +
-            " exists"
-        )
-        image_file_OK = os.path.isfile(image_file)
-        if image_file_OK:
+        image_file = None
+        if self.IMAGE_TARBALL is not None:
+            image_file = self.IMAGE_TARBALL
             self.run_log.debug(
-                "The image file " +
+                "Going to check if " +
                 image_file +
                 " exists"
             )
-            self.run_log.info(
-                "Going to install " +
-                image_file +
-                ". Equivalent command is 'apimgr -f " +
-                image_file +
-                " -i'"
-            )
-
-            # Lets use apimgr install tools
-            try:
+            image_file_OK = os.path.isfile(image_file)
+            if image_file_OK:
                 self.run_log.debug(
-                    "Going to import apimgr"
-                )
-                import classes.apimgr as apimgr
-                self.run_log.debug(
-                    "Imported apimgr"
-                )
-            except ImportError:
-                self.run_log.error(
-                    "Cannot import apimgr"
-                )
-                self.run_log.debug(
-                    "Going to terminate with RC 22"
-                )
-                sys.exit(22)
-            # We have apimgr loaded now
-            input0 = argparse.Namespace(
-                config_file='apimgr.yml',
-                force=False,
-                image_file_name=image_file,
-                install=True,
-                tag_name=None,
-                create_network=False,
-                network_name="ess_network",
-                rcont=False)
-            self.run_log.debug(
-                "Going to readconf with apimgr"
-            )
-            try:
-                apimgr.readconf(input0)
-                self.run_log.debug(
-                    "Success readconf with apimgr"
-                )
-            except BaseException:
-                self.run_log.error(
-                    "Could not readconf with apimgr"
-                )
-                self.run_log.debug(
-                    "Going to terminate with RC 23"
-                )
-                sys.exit(23)
-            self.run_log.info(
-                "Going to install the image " +
-                image_file +
-                ". It would do no changes if already installed."
-            )
-            try:
-                self.run_log.debug(
-                    "Going to run apimgr installimage"
-                )
-                apimgr.installimage(input0)
-                self.run_log.info(
-                    "Image " +
+                    "The image file " +
                     image_file +
-                    " has been installed succesfully."
+                    " exists"
                 )
-            except BaseException:
-                err = sys.exc_info()[0]
-                # We are back on error
                 self.run_log.info(
-                    "Image " +
+                    "Going to install " +
                     image_file +
-                    " has failed to install with " +
-                    str(err)
+                    ". Equivalent command is 'rclmgr -f " +
+                    image_file +
+                    " -i'"
+                )
+            # File does not exists
+            else:
+                self.run_log.error(
+                    "The image file " +
+                    image_file +
+                    " does not exist"
                 )
                 return False
-        # File does not exists
-        else:
+
+        # Lets use rclmgr install tools
+        try:
+            self.run_log.debug(
+                "Going to import deployguimgr"
+            )
+            import classes.deployguimgr as deployguimgr
+            self.run_log.debug(
+                "Imported deployguimgr"
+            )
+        except ImportError:
             self.run_log.error(
-                "The image file " +
-                image_file +
-                " does not exist"
+                "Cannot import deployguimgr"
+            )
+            self.run_log.debug(
+                "Going to terminate with RC 22"
+            )
+            sys.exit(22)
+        # We have deployguimgr loaded now
+        input0 = argparse.Namespace(
+            config_file='deployguimgr.yml',
+            force=True,
+            image_file_name=image_file,
+            install=True,
+            create_network=False,
+            network_name="ess_network",
+            run=False)
+        self.run_log.debug(
+            "Going to readconf with deployguimgr"
+        )
+        try:
+            deployguimgr.readconf(input0)
+            self.run_log.debug(
+                "Success readconf with deployguimgr"
+            )
+        except BaseException:
+            self.run_log.error(
+                "Could not readconf with deployguimgr"
+            )
+            self.run_log.debug(
+                "Going to terminate with RC 23"
+            )
+            sys.exit(23)
+        self.run_log.info(
+            "Going to install the image. It would do no changes if already installed."
+        )
+        try:
+            self.run_log.debug(
+                "Going to run deployguimgr installimage"
+            )
+            if input0.image_file_name is not None:
+                deployguimgr.install_image_from_file(input0.image_file_name, input0.force)
+            else:
+                deployguimgr.install_image_from_repo(input0.force)
+            self.run_log.info(
+                "Image has been installed succesfully."
+            )
+        except BaseException:
+            err = sys.exc_info()[0]
+            # We are back on error
+            self.run_log.info(
+                "Image installation has failed to install with " +
+                str(err)
             )
             return False
 
@@ -1399,59 +1420,58 @@ class apimgr_yml(object):
 
     def start_container(self):
         # Users wants that we run the container
-        # We simulate apimgr -r
+        # We simulate deployguimgr -r
         try:
             self.run_log.debug(
-                "Going to import apimgr"
+                "Going to import deployguimgr"
             )
-            import classes.apimgr as apimgr
+            import classes.deployguimgr as deployguimgr
             self.run_log.debug(
-                "Imported essmgr"
+                "Imported deployguimgr"
             )
         except ImportError:
             self.run_log.error(
-                "Cannot import essmgr"
+                "Cannot import deployguimgr"
             )
             self.run_log.debug(
                 "Going to terminate with RC 22"
             )
             sys.exit(22)
         input0 = argparse.Namespace(
-            config_file='apimgr.yml',
+            config_file='deployguimgr.yml',
             force=False,
             image_file_name=None,
             install=False,
-            tag_name=None,
             create_network=False,
             network_name="ess_network",
             rcont=True
             )
         self.run_log.debug(
-            "Going to readconf with apimgr"
+            "Going to readconf with deployguimgr"
         )
         try:
-            apimgr.readconf(input0)
+            deployguimgr.readconf(input0)
             self.run_log.debug(
-                "Success readconf with essmgr"
+                "Success readconf with deployguimgr"
             )
         except BaseException:
             self.run_log.error(
-                "Could not readconf with essmgr"
+                "Could not readconf with deployguimgr"
             )
             self.run_log.debug(
                 "Going to terminate with RC 23"
             )
             sys.exit(23)
         self.run_log.info(
-            "Going to start the container. On further runs use 'startRCcont' " +
+            "Going to start the container. On further runs use 'startDeployGUIContainer' " +
             "command to manage this container"
         )
 
         try:
             self.run_log.debug(
-                "Going to run apimgr runcont"
+                "Going to run deployguimgr runcont"
             )
-            apimgr.runcont(input0, True)
+            deployguimgr.run_container(input0, True)
         except BaseException:
             # We are back
             self.run_log.error(
@@ -1465,10 +1485,9 @@ class apimgr_yml(object):
             sys.exit(24)
             return False  # This should never run
         self.run_log.debug(
-            "We are back from apimgr runcont normal mode"
+            "We are back from deployguimgr runcont normal mode"
         )
         return True
-
 
     def __podman_bin_exists(self):
         self.run_log.debug(
@@ -1506,12 +1525,11 @@ class apimgr_yml(object):
             )
             sys.exit(28)
 
-
     def __SSR_SQL_check(self):
         # During SSR essutils  flow an SQL DB is created
         # We will use that to confirm SSR flow was indeed used
         # This is the first time we do this so warning and basic check
-        sqlite3_DB_file = '/opt/ibm/ess/tools/conf/essutils.sql'
+        sqlite3_DB_file = '/home/deployguiadmin/backup/essutils.sql'
         self.run_log.debug(
             "Going to check if SSR/essutils sqlite3 DB file exists"
         )
@@ -1560,7 +1578,6 @@ class apimgr_yml(object):
                 "Going to terminate with RC 31"
             )
             sys.exit(31)
-
 
     def __check_RAS_IP(self):
         self.run_log.debug(
@@ -1701,7 +1718,6 @@ class apimgr_yml(object):
         else:
             return True
 
-
     def __get_installed_containers(self):
         # Generates a JSON list of intalled containers
         self.run_log.debug(
@@ -1729,7 +1745,6 @@ class apimgr_yml(object):
             )
             container_list = []
         return container_list
-
 
     def __alreadyUP(self, img_str_find):
         self.run_log.debug(

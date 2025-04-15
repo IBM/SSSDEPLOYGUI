@@ -1,0 +1,132 @@
+#!/usr/bin/python3
+# -----------------------------------------------------------------------------
+# Licensed Materials - Property of IBM
+#
+# (C) Copyright IBM Corp.  2024  All Rights Reserved
+#
+# US Government Users Restricted Rights - Use, duplication or disclosure
+# restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+# -----------------------------------------------------------------------------
+#
+# File name: startDeployGUIContainer
+# Description: It creates a sanitized deployguimgr.yml based on input and system
+# -----------------------------------------------------------------------------
+#
+# Changelog:
+# YYYY/MM/DD
+# 2024/04/03  0.1   Initial Creation
+# -----------------------------------------------------------------------------
+import sys
+import argparse
+from classes.deployguimgr_yml.py import deployguimgr_yml
+import os
+import shutil
+
+ownFile = __file__
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+
+
+    parser.add_argument(
+        '-v',
+        '--verbose',
+        action='store_true',
+        dest='verbose',
+        help='Show verbose messages in console',
+        default=False)
+
+    parser.add_argument(
+        '-f',
+        '--file-name',
+        action='store',
+        dest='filename',
+        help='Restore from local container tar ball. SSSDEPLOYGUI.tar',
+        default=None)
+
+    args = parser.parse_args()
+
+    return args.verbose, args.filename
+
+
+def copyLogs():
+    baseVarLogDirExists = os.path.isdir("/var/log/deploygui")
+    if baseVarLogDirExists:
+        startRCLcontVarLogExists = os.path.isdir("/var/log/deploygui/startDeployGUIContainer")
+        if not startRCLcontVarLogExists:
+            os.mkdir("/var/log/deploygui/startDeployGUIContainer")
+        logsExists = os.path.isdir("logs")
+        if not logsExists:
+            os.mkdir("logs")
+        for logFile in os.listdir("logs"):
+            srcLogFile = "logs/" + logFile
+            dstLogFile = "/var/log/deploygui/startDeployGUIContainer/" + logFile
+            if os.path.isfile(srcLogFile):
+                shutil.copy(srcLogFile, dstLogFile)
+
+
+def main():
+    verbose, filename = parse_arguments()
+    our_yml = deployguimgr_yml(
+        verbose,
+        filename
+    )
+    # We need to ensure exit before this if clean up
+    our_yml.run_log.debug(
+        "Going to invoke input data method from main program"
+    )
+    entries_NOK = our_yml.startDeployGUIContainer()
+    if entries_NOK:
+        our_yml.run_log.error(
+            "The file has been written but does not " +
+            "pass the checks. You CANNOT continue with the next steps. " +
+            "Check the ERROR messages above to " +
+            "understand which tests failed and fix them. " +
+            "You can run this tool again, the data you entered will " +
+            "be shown as default entries."
+        )
+        sys.exit(1)
+    else:
+        our_yml.run_log.debug(
+            "Could generate the needed information into YML, " +
+            "going to start the Deployment GUI container"
+        )
+        our_yml.run_log.debug(
+            "Going to prepare the container"
+        )
+        canPrep = our_yml.prep_container()
+        our_yml.run_log.debug(
+            "back from prepare the container"
+        )
+        if canPrep:
+
+            could_start = our_yml.start_container()
+            if could_start:
+                our_yml.run_log.info(
+                    "We are back from the container run. " +
+                    "To start a new container again run " +
+                    ownFile
+                )
+                sys.exit(0)
+
+            else:
+                our_yml.run_log.info(
+                    "They had been some issues on the run, please " +
+                    "check the above messages and follow up with " +
+                    "using './startDeployGUIContainer'. Thanks"
+                )
+                sys.exit(5)
+        else:
+            our_yml.run_log.error(
+                "Could not prepare the container"
+            )
+            sys.exit(6)
+
+if __name__ == '__main__':
+    try:
+        main()
+        copyLogs()
+    finally:
+        copyLogs()

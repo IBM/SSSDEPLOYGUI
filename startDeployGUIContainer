@@ -19,7 +19,7 @@
 # -----------------------------------------------------------------------------
 import sys
 import argparse
-from classes.deployguimgr_yml.py import deployguimgr_yml
+from classes.deployguimgr_yml import deployguimgr_yml
 import os
 import shutil
 

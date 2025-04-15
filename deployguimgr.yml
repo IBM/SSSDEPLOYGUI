@@ -8,7 +8,7 @@ CONTAINER:
 
     # ------------------------------------------------------
     # Optional container network.
-    # Make sure the network has been create prior using rclmgr command.
+    # Make sure the network has been create prior using deployguimgr command.
     # By default podman default CNI network will be used
     # ------------------------------------------------------
     # CONTAINER_NETWORK_NAME: ess_network
@@ -30,9 +30,9 @@ CONTAINER:
     DEPLOY_GUI_PORT: 9090
 
     # ------------------------------------------------------
-    # SSS API SSH Port, Default 30022, Development purpose only.
+    # SSS Deployment GUI SSH Port, Default 30022, Development purpose only.
     # ------------------------------------------------------
-    # SSH_PORT: 30022
+    SSH_PORT: 30022
 
     # ------------------------------------------------------
     # Container image version detail

@@ -58,7 +58,7 @@ def readconf(input0):
     if "DEPLOY_GUI_PORT" in cfg["CONTAINER"]:
         DEPLOY_GUI_PORT = str(cfg["CONTAINER"]["DEPLOY_GUI_PORT"])
     if DEPLOY_GUI_PORT is None:
-        print("-- [ERROR] API Server port should be provided inside deployguimgr.yml file... --")
+        print("-- [ERROR] Deployment GUI Server port should be provided inside deployguimgr.yml file... --")
         sys.exit(1)
 
     # ESS Deployment GUI container SSH Port, default 30022

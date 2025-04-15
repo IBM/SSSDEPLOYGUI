@@ -56,6 +56,7 @@ STATIC_deployguimgr_YML = {
     'RAS_INTERFACE_IP': '10.23.16.1',
     'IMAGE_NAME': 'cp.stg.icr.io/cp/scalesystem/sss_deploygui',
     'SSH_PORT': '30022',
+    'DEPLOY_GUI_PORT': '9090',
     'LOG': '/home/deployguiadmin/log',
     'BKUP': '/home/deployguiadmin/backup'
 }
@@ -262,9 +263,6 @@ class deployguimgr_yml(object):
 
         # Lets check RAS IP is the expected one
         self.__check_RAS_IP()
-
-        # Lets check we can reach the endpoints
-        self.__reach_endpoints()
 
         # Lets merge the container information
         self.run_log.debug(
@@ -545,7 +543,7 @@ class deployguimgr_yml(object):
                 "deployguimgr.py does not exist inside classes directory"
             )
             self.run_log.debug(
-                "Going to copy deployguimgr inside classes directory as apideployguimgrmgr.py"
+                "Going to copy deployguimgr inside classes directory as deployguimgr.py"
             )
             try:
                 shutil.copyfile("deployguimgr", "classes/deployguimgr.py")
@@ -1305,7 +1303,7 @@ class deployguimgr_yml(object):
         # Users wants that we prep the container
         # This requires deployguimgr -i, deployguimgr -n
         self.run_log.debug(
-            "Starting check if apideployguimgrmgr exists"
+            "Starting check if deployguimgr exists"
         )
         file_exists = os.path.isfile("deployguimgr")
         if file_exists:
@@ -1337,7 +1335,7 @@ class deployguimgr_yml(object):
                 self.run_log.info(
                     "Going to install " +
                     image_file +
-                    ". Equivalent command is 'rclmgr -f " +
+                    ". Equivalent command is 'deployguimgr -f " +
                     image_file +
                     " -i'"
                 )
@@ -1350,7 +1348,7 @@ class deployguimgr_yml(object):
                 )
                 return False
 
-        # Lets use rclmgr install tools
+        # Lets use deployguimgr install tools
         try:
             self.run_log.debug(
                 "Going to import deployguimgr"

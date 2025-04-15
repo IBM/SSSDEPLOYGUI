@@ -86,14 +86,14 @@ def checkdir():
 # Depreciation warning
 # -----------------------------------------------------------------------------
 def deployguimgr_EOL_warning():
-    ALLOW_DEPLOY_GUI = os.getenv('ALLOW_DEPLOY_GUI')
-    if ALLOW_DEPLOY_GUI is None:
+    ALLOW_DEPLOYGUIMGR = os.getenv('ALLOW_DEPLOYGUIMGR')
+    if ALLOW_DEPLOYGUIMGR is None:
         print("-- [ERROR] You cannot run deployguimgr directly, use startContainer instead")
-        print("           If you still want to run deployguimgr directly, set ALLOW_DEPLOY_GUI to value 1 on the shell")
+        print("           If you still want to run deployguimgr directly, set ALLOW_DEPLOYGUIMGR to value 1 on the shell")
         print("           but be aware this is not supported and any error you encounter you need to run with startContainer")
         time.sleep(2)
         sys.exit(1)
-    elif ALLOW_DEPLOY_GUI == "1":
+    elif ALLOW_DEPLOYGUIMGR == "1":
         print(
             "-- [WARNING] You should not run deployguimgr directly, use startContainer instead")
         print(
@@ -103,7 +103,7 @@ def deployguimgr_EOL_warning():
         time.sleep(5)
     else:
         print("-- [ERROR] You cannot run deployguimgr directly, use startContainer instead")
-        print("           If you still want to run deployguimgr directly, set ALLOW_DEPLOY_GUI to value 1 on the shell")
+        print("           If you still want to run deployguimgr directly, set ALLOW_DEPLOYGUIMGR to value 1 on the shell")
         print("           Now it has a value but it is not set to '1'.")
         print("           Be aware this is not supported and any error you encounter you need to run with startContainer")
         time.sleep(2)
@@ -478,17 +478,17 @@ def main():
     input0 = parser.parse_args()
     readconf(input0)
 
-    ALLOW_DEPLOY_GUI = os.getenv('ALLOW_DEPLOY_GUI')
-    if ALLOW_DEPLOY_GUI is None:
+    ALLOW_DEPLOYGUIMGR = os.getenv('ALLOW_DEPLOYGUIMGR')
+    if ALLOW_DEPLOYGUIMGR is None:
         print(
             "-- [WARNING] The tool 'deployguimgr' has been deprecated from 6.2.3.0 and newer. " +
             "Please use 'startContainer' instead. --"
         )
         sys.exit(0)
-    elif ALLOW_DEPLOY_GUI == "1":
+    elif ALLOW_DEPLOYGUIMGR == "1":
         print(
             "-- [WARNING] The tool 'deployguimgr' has been deprecated from 6.2.3.0 and newer. " +
-            "Proceeding to use deployguimgr since you are focing it by export ALLOW_DEPLOY_GUI=1. " +
+            "Proceeding to use deployguimgr since you are focing it by export ALLOW_DEPLOYGUIMGR=1. " +
             "Please avoid using this flag out of an IBM facility. --"
         )
     else:

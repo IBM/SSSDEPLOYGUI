@@ -25,9 +25,9 @@ CONTAINER:
     RAS_INTERFACE_IP: 10.23.16.1
 
     # ------------------------------------------------------
-    # SSS Deploy from GUI Port, Default 9090
+    # SSS Deploy from GUI Port, Default 30443
     # ------------------------------------------------------
-    DEPLOY_GUI_PORT: 9090
+    DEPLOY_GUI_PORT: 30443
 
     # ------------------------------------------------------
     # SSS Deployment GUI SSH Port, Default 30022, Development purpose only.

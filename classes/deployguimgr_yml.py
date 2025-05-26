@@ -56,7 +56,7 @@ STATIC_deployguimgr_YML = {
     'RAS_INTERFACE_IP': '10.23.16.1',
     'IMAGE_NAME': 'cp.stg.icr.io/cp/scalesystem/sss_deploygui',
     'SSH_PORT': '30022',
-    'DEPLOY_GUI_PORT': '9090',
+    'DEPLOY_GUI_PORT': '30443',
     'LOG': '/home/deployguiadmin/log',
     'BKUP': '/home/deployguiadmin/backup'
 }

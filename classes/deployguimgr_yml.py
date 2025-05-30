@@ -1437,7 +1437,7 @@ class deployguimgr_yml(object):
             sys.exit(22)
         input0 = argparse.Namespace(
             config_file='deployguimgr.yml',
-            force=False,
+            force=True,
             image_file_name=None,
             install=False,
             create_network=False,

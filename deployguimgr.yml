@@ -38,7 +38,7 @@ CONTAINER:
     # Container image version detail
     # ------------------------------------------------------
     # Image Name
-    IMAGE_NAME: cp.stg.icr.io/cp/scalesystem/sss_deploygui
+    IMAGE_NAME: cp.icr.io/cp/scalesystem/sss_deploygui
 
     # Image Version
     IMAGE_VERSION: 6.2.3.0

@@ -155,7 +155,7 @@ def clean_nftables():
 # -----------------------------------------------------------------------------
 # Run Container
 # -----------------------------------------------------------------------------
-def run_container(force, is_startdeployguicont=False, container_version="6.2.3.0"):
+def run_container(force, is_startdeployguicont=False):
     global UTILITY_HOSTNAME
     global DEPLOY_GUI_PORT
     global SSH_PORT
@@ -249,7 +249,7 @@ def run_container(force, is_startdeployguicont=False, container_version="6.2.3.0
             " --env \"UTILITY_RAS_IP=" + cfg["CONTAINER"]["RAS_INTERFACE_IP"] + "\"" + \
             " --env \"CONTAINER_HOSTNAME=" + cfg["CONTAINER"]["CONTAINER_HOSTNAME"] + "\"" + \
             " --env \"CONTAINER_DOMAIN_NAME=" + cfg["CONTAINER"]["CONTAINER_DOMAIN_NAME"] + "\"" \
-            " --env \"CONTAINER_VERSION=" + container_version + "\""
+            " --env \"CONTAINER_VERSION=" + IMAGE_VERSION + "\""
 
         if "CONTAINER_NETWORK_NAME" in cfg["CONTAINER"]:
             network = " --net " + \

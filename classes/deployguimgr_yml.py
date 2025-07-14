@@ -1469,7 +1469,7 @@ class deployguimgr_yml(object):
             self.run_log.debug(
                 "Going to run deployguimgr runcont"
             )
-            deployguimgr.run_container(input0, True, self.IMAGE_VERSION)
+            deployguimgr.run_container(input0, True)
         except BaseException:
             # We are back
             self.run_log.error(

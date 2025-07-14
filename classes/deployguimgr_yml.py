@@ -54,7 +54,7 @@ STATIC_deployguimgr_YML = {
     'CAMPUS_INTERFACE': 'campus',
     'RAS_INTERFACE': 'virbr1',
     'RAS_INTERFACE_IP': '10.23.16.1',
-    'IMAGE_NAME': 'cp.icr.io/cp/scalesystem/sss_deploygui',
+    'IMAGE_NAME': 'cp.stg.icr.io/cp/scalesystem/sss_deploygui',
     'SSH_PORT': '30022',
     'DEPLOY_GUI_PORT': '30443',
     'LOG': '/home/deployguiadmin/log',

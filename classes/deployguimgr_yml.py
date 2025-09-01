@@ -351,7 +351,7 @@ class deployguimgr_yml(object):
                 if IMAGE_VERSION_user == "6.2.3.0" or IMAGE_VERSION_user == "6.2.3.1" or IMAGE_VERSION_user == "6.2.3.2" or IMAGE_VERSION_user == "7.0.0.0":
                     break
                 else:
-                    print("\nImage name should be 6.2.3.0/6.2.3.1/6.2.3.2 or 7.0.0.0")
+                    print("\nImage name should be 6.2.3.0 or 6.2.3.1 or 6.2.3.2 or 7.0.0.0")
             return IMAGE_VERSION_user
         except KeyboardInterrupt:
             print("")

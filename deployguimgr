@@ -248,7 +248,8 @@ def run_container(force, is_startdeployguicont=False):
             " --env \"UTILITY_CAMPUS_IP=" + cfg["CONTAINER"]["CAMPUS_INTERFACE_IP"] + "\"" + \
             " --env \"UTILITY_RAS_IP=" + cfg["CONTAINER"]["RAS_INTERFACE_IP"] + "\"" + \
             " --env \"CONTAINER_HOSTNAME=" + cfg["CONTAINER"]["CONTAINER_HOSTNAME"] + "\"" + \
-            " --env \"CONTAINER_DOMAIN_NAME=" + cfg["CONTAINER"]["CONTAINER_DOMAIN_NAME"] + "\""
+            " --env \"CONTAINER_DOMAIN_NAME=" + cfg["CONTAINER"]["CONTAINER_DOMAIN_NAME"] + "\"" \
+            " --env \"CONTAINER_VERSION=" + IMAGE_VERSION + "\""
 
         if "CONTAINER_NETWORK_NAME" in cfg["CONTAINER"]:
             network = " --net " + \

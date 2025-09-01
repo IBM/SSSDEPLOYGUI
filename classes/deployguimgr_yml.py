@@ -54,7 +54,7 @@ STATIC_deployguimgr_YML = {
     'CAMPUS_INTERFACE': 'campus',
     'RAS_INTERFACE': 'virbr1',
     'RAS_INTERFACE_IP': '10.23.16.1',
-    'IMAGE_NAME': 'cp.icr.io/cp/scalesystem/sss_deploygui',
+    'IMAGE_NAME': 'cp.stg.icr.io/cp/scalesystem/sss_deploygui',
     'SSH_PORT': '30022',
     'DEPLOY_GUI_PORT': '30443',
     'LOG': '/home/deployguiadmin/log',
@@ -65,7 +65,7 @@ CONFIG_deployguimgr_YML = {
     'CONTAINER_DOMAIN_NAME': 'gpfs.local',
     'UTILITY_HOSTNAME': 'utilityBareMetal',
     'CAMPUS_INTERFACE_IP': '192.168.100.10',
-    'IMAGE_VERSION': '6.2.3.2'
+    'IMAGE_VERSION': '7.0.0.0'
 }
 
 
@@ -348,10 +348,10 @@ class deployguimgr_yml(object):
                 IMAGE_VERSION_user = input(
                     "Please type a Image Version : "
                 )
-                if IMAGE_VERSION_user == "6.2.3.0" or IMAGE_VERSION_user == "6.2.3.1" or IMAGE_VERSION_user == "6.2.3.2":
+                if IMAGE_VERSION_user == "6.2.3.0" or IMAGE_VERSION_user == "6.2.3.1" or IMAGE_VERSION_user == "6.2.3.2" or IMAGE_VERSION_user == "7.0.0.0":
                     break
                 else:
-                    print("\nImage name should be 6.2.3.0 or 6.2.3.1 or 6.2.3.2")
+                    print("\nImage name should be 6.2.3.0 or 6.2.3.1 or 6.2.3.2 or 7.0.0.0")
             return IMAGE_VERSION_user
         except KeyboardInterrupt:
             print("")

@@ -65,7 +65,7 @@ CONFIG_deployguimgr_YML = {
     'CONTAINER_DOMAIN_NAME': 'gpfs.local',
     'UTILITY_HOSTNAME': 'utilityBareMetal',
     'CAMPUS_INTERFACE_IP': '192.168.100.10',
-    'IMAGE_VERSION': '6.2.3.0'
+    'IMAGE_VERSION': '6.2.3.1'
 }
 
 

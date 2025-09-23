@@ -51,12 +51,10 @@ RAS_IP = "10.23.16.1"
 
 STATIC_deployguimgr_YML = {
     'CONTAINER_HOSTNAME': 'utilityBareMetal-deploygui-official',
-    'CAMPUS_INTERFACE': 'campus',
     'RAS_INTERFACE': 'virbr1',
     'RAS_INTERFACE_IP': '10.23.16.1',
     'IMAGE_NAME': 'cp.stg.icr.io/cp/scalesystem/sss_deploygui',
     'SSH_PORT': '30022',
-    'DEPLOY_GUI_PORT': '30443',
     'LOG': '/home/deployguiadmin/log',
     'BKUP': '/home/deployguiadmin/backup'
 }
@@ -64,8 +62,10 @@ STATIC_deployguimgr_YML = {
 CONFIG_deployguimgr_YML = {
     'CONTAINER_DOMAIN_NAME': 'gpfs.local',
     'UTILITY_HOSTNAME': 'utilityBareMetal',
+    'CAMPUS_INTERFACE': 'campus',
     'CAMPUS_INTERFACE_IP': '192.168.100.10',
-    'IMAGE_VERSION': '7.0.0.0'
+    'IMAGE_VERSION': '7.0.0.0',
+    'DEPLOY_GUI_PORT': '30443'
 }
 
 
@@ -180,7 +180,13 @@ class deployguimgr_yml(object):
             )
 
         # Lets deal with CAMPUS if applicable
-        if "CAMPUS_INTERFACE" in self.container:
+        self.CAMPUS_INTERFACE = self.__ask_CAMPUS_INTERFACE()
+        if self.CAMPUS_INTERFACE != "":
+            self.CAMPUS_IPv4 = self.__get_IP_address(
+                self.CAMPUS_INTERFACE,
+                "CAMPUS"
+            )
+        elif "CAMPUS_INTERFACE" in self.container:
             self.CAMPUS_IPv4 = self.__get_IP_address(
                 self.container['CAMPUS_INTERFACE'],
                 "CAMPUS"
@@ -217,6 +223,9 @@ class deployguimgr_yml(object):
         # Lets deal with IMAGE_NAME if applicable
         self.IMAGE_NAME = self.container['IMAGE_NAME']
         self.IMAGE_VERSION = self.__ask_IMAGE_VERSION()
+
+        # Lets deal with API Port if applicable
+        self.DEPLOY_GUI_PORT = self.__ask_DEPLOY_GUI_PORT()
 
         self.run_log.debug(
             "We use UTILITY hostname to derivate names for Management. Safe option."
@@ -272,8 +281,10 @@ class deployguimgr_yml(object):
         # We need to merge the other config parameters that are not asked
         self.merged_cfg.update({'CONTAINER_DOMAIN_NAME': self.DNS_domain})
         self.merged_cfg.update({'UTILITY_HOSTNAME': self.UTILITY_HOSTNAME})
+        self.merged_cfg.update({'CAMPUS_INTERFACE': self.CAMPUS_INTERFACE})
         self.merged_cfg.update({'CAMPUS_INTERFACE_IP': self.CAMPUS_IPv4})
         self.merged_cfg.update({'IMAGE_VERSION': self.IMAGE_VERSION})
+        self.merged_cfg.update({'DEPLOY_GUI_PORT': self.DEPLOY_GUI_PORT})
         #self.merged_cfg.update({'RAS_INTERFACE_IP': self.RAS_IPv4})
 
         # the static entries. We should readapt the function that does this
@@ -338,6 +349,32 @@ class deployguimgr_yml(object):
         # Not a big deal yet as check is fast
         return entries_NOK
 
+    def __ask_CAMPUS_INTERFACE(self):
+        # User wants to change campus interface we change or exit if cancel
+        try:
+            while True:
+                self.run_log.debug(
+                    "Going to ask the user for a Campus interface name"
+                )
+                CAMPUS_INTERFACE_user = input(
+                    "Please type a Campus interfae name (campus): "
+                )
+                if CAMPUS_INTERFACE_user == "":
+                    CAMPUS_INTERFACE_user = "campus"
+                    break
+                else:
+                    break
+            return CAMPUS_INTERFACE_user
+        except KeyboardInterrupt:
+            print("")
+            self.run_log.error(
+                "User cancelled Campus interface name input\n"
+            )
+            self.run_log.debug(
+                "Going to terminate with RC 6"
+            )
+            sys.exit(6)
+
     def __ask_IMAGE_VERSION(self):
         # User wants to change hostname we change or exit if cancel
         try:
@@ -346,17 +383,52 @@ class deployguimgr_yml(object):
                     "Going to ask the user for a Image Version"
                 )
                 IMAGE_VERSION_user = input(
-                    "Please type a Image Version : "
+                    "Please type a Image Version (7.0.0.0): "
                 )
-                if IMAGE_VERSION_user == "6.2.3.0" or IMAGE_VERSION_user == "6.2.3.1" or IMAGE_VERSION_user == "6.2.3.2" or IMAGE_VERSION_user == "7.0.0.0":
+                if IMAGE_VERSION_user == "":
+                    IMAGE_VERSION_user = "7.0.0.0"
+                    break
+                elif IMAGE_VERSION_user == "6.2.3.0" or \
+                        IMAGE_VERSION_user == "6.2.3.1" or \
+                        IMAGE_VERSION_user == "6.2.3.2" or \
+                        IMAGE_VERSION_user == "7.0.0.0":
                     break
                 else:
-                    print("\nImage name should be 6.2.3.0 or 6.2.3.1 or 6.2.3.2 or 7.0.0.0")
+                    print("Image name should be 6.2.3.0 or 6.2.3.1 or 6.2.3.2 or 7.0.0.0\n")
             return IMAGE_VERSION_user
         except KeyboardInterrupt:
             print("")
             self.run_log.error(
                 "User cancelled EMS hostname input\n"
+            )
+            self.run_log.debug(
+                "Going to terminate with RC 6"
+            )
+            sys.exit(6)
+
+    def __ask_DEPLOY_GUI_PORT(self):
+        # User wants to change API Port we change or exit if cancel
+        try:
+            while True:
+                self.run_log.debug(
+                    "Going to ask the user for a Deployment GUI Port number default 36443"
+                )
+                DEPLOY_GUI_PORT_user = input(
+                    "Please type a Deployment GUI Port default (36443): "
+                )
+                if DEPLOY_GUI_PORT_user == "":
+                    DEPLOY_GUI_PORT_user = "36443"
+                    break
+                else:
+                    if DEPLOY_GUI_PORT_user.isdigit() and len(DEPLOY_GUI_PORT_user) == 5:
+                        break
+                    else:
+                        print("Deployment GUI port should be a 5 digit numeric number. Make the entered tcp port is free and available.\n")
+            return DEPLOY_GUI_PORT_user
+        except KeyboardInterrupt:
+            print("")
+            self.run_log.error(
+                "User cancelled API port input\n"
             )
             self.run_log.debug(
                 "Going to terminate with RC 6"

@@ -411,13 +411,13 @@ class deployguimgr_yml(object):
         try:
             while True:
                 self.run_log.debug(
-                    "Going to ask the user for a Deployment GUI Port number default 36443"
+                    "Going to ask the user for a Deployment GUI Port number default 30443"
                 )
                 DEPLOY_GUI_PORT_user = input(
-                    "Please type a Deployment GUI Port default (36443): "
+                    "Please type a Deployment GUI Port default (30443): "
                 )
                 if DEPLOY_GUI_PORT_user == "":
-                    DEPLOY_GUI_PORT_user = "36443"
+                    DEPLOY_GUI_PORT_user = "30443"
                     break
                 else:
                     if DEPLOY_GUI_PORT_user.isdigit() and len(DEPLOY_GUI_PORT_user) == 5:

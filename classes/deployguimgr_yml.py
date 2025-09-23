@@ -225,7 +225,7 @@ class deployguimgr_yml(object):
         self.IMAGE_VERSION = self.__ask_IMAGE_VERSION()
 
         # Lets deal with API Port if applicable
-        self.API_PORT = self.__ask_DEPLOY_GUI_PORT()
+        self.DEPLOY_GUI_PORT = self.__ask_DEPLOY_GUI_PORT()
 
         self.run_log.debug(
             "We use UTILITY hostname to derivate names for Management. Safe option."
@@ -413,18 +413,18 @@ class deployguimgr_yml(object):
                 self.run_log.debug(
                     "Going to ask the user for a Deployment GUI Port number default 36443"
                 )
-                API_PORT_user = input(
+                DEPLOY_GUI_PORT_user = input(
                     "Please type a API Port default (36443): "
                 )
-                if API_PORT_user == "":
-                    API_PORT_user = "36443"
+                if DEPLOY_GUI_PORT_user == "":
+                    DEPLOY_GUI_PORT_user = "36443"
                     break
                 else:
-                    if API_PORT_user.isdigit() and len(API_PORT_user) == 5:
+                    if DEPLOY_GUI_PORT_user.isdigit() and len(DEPLOY_GUI_PORT_user) == 5:
                         break
                     else:
                         print("Deployment GUI port should be a 5 digit numeric number. Make the entered tcp port is free and available.\n")
-            return API_PORT_user
+            return DEPLOY_GUI_PORT_user
         except KeyboardInterrupt:
             print("")
             self.run_log.error(

@@ -414,7 +414,7 @@ class deployguimgr_yml(object):
                     "Going to ask the user for a Deployment GUI Port number default 36443"
                 )
                 DEPLOY_GUI_PORT_user = input(
-                    "Please type a API Port default (36443): "
+                    "Please type a Deployment GUI Port default (36443): "
                 )
                 if DEPLOY_GUI_PORT_user == "":
                     DEPLOY_GUI_PORT_user = "36443"

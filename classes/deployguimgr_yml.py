@@ -65,6 +65,7 @@ CONFIG_deployguimgr_YML = {
     'CAMPUS_INTERFACE': 'campus',
     'CAMPUS_INTERFACE_IP': '192.168.100.10',
     'IMAGE_VERSION': '7.0.0.0',
+    'API_PORT': '46443',
     'DEPLOY_GUI_PORT': '30443'
 }
 
@@ -225,6 +226,9 @@ class deployguimgr_yml(object):
         self.IMAGE_VERSION = self.__ask_IMAGE_VERSION()
 
         # Lets deal with API Port if applicable
+        self.API_PORT = self.__ask_API_PORT()
+
+        # Lets deal with API Port if applicable
         self.DEPLOY_GUI_PORT = self.__ask_DEPLOY_GUI_PORT()
 
         self.run_log.debug(
@@ -284,6 +288,7 @@ class deployguimgr_yml(object):
         self.merged_cfg.update({'CAMPUS_INTERFACE': self.CAMPUS_INTERFACE})
         self.merged_cfg.update({'CAMPUS_INTERFACE_IP': self.CAMPUS_IPv4})
         self.merged_cfg.update({'IMAGE_VERSION': self.IMAGE_VERSION})
+        self.merged_cfg.update({'API_PORT': self.API_PORT})
         self.merged_cfg.update({'DEPLOY_GUI_PORT': self.DEPLOY_GUI_PORT})
         #self.merged_cfg.update({'RAS_INTERFACE_IP': self.RAS_IPv4})
 
@@ -400,6 +405,35 @@ class deployguimgr_yml(object):
             print("")
             self.run_log.error(
                 "User cancelled EMS hostname input\n"
+            )
+            self.run_log.debug(
+                "Going to terminate with RC 6"
+            )
+            sys.exit(6)
+
+    def __ask_API_PORT(self):
+        # User wants to change API Port we change or exit if cancel
+        try:
+            while True:
+                self.run_log.debug(
+                    "Going to ask the user for a API Port number default 46443"
+                )
+                API_PORT_user = input(
+                    "Please type a API Port default (46443): "
+                )
+                if API_PORT_user == "":
+                    API_PORT_user = "46443"
+                    break
+                else:
+                    if API_PORT_user.isdigit() and len(API_PORT_user) == 5:
+                        break
+                    else:
+                        print("API port should be a 5 digit numeric number. Make the entered tcp port is free and available.\n")
+            return API_PORT_user
+        except KeyboardInterrupt:
+            print("")
+            self.run_log.error(
+                "User cancelled API port input\n"
             )
             self.run_log.debug(
                 "Going to terminate with RC 6"

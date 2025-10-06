@@ -20,12 +20,14 @@ def readconf(input0):
     global UTILITY_HOSTNAME
     global IMAGE_NAME
     global IMAGE_VERSION
+    global API_PORT
     global DEPLOY_GUI_PORT
     global SSH_PORT
 
     UTILITY_HOSTNAME = None
     IMAGE_NAME = None
     IMAGE_VERSION = None
+    API_PORT = None
     DEPLOY_GUI_PORT = None
     SSH_PORT = None
 
@@ -52,6 +54,13 @@ def readconf(input0):
         IMAGE_VERSION = str(cfg["CONTAINER"]["IMAGE_VERSION"])
     if IMAGE_VERSION is None:
         print("-- [ERROR] Image version should be provided inside deployguimgr.yml file... --")
+        sys.exit(1)
+
+    # ESS API Server Port, default 46443
+    if "API_PORT" in cfg["CONTAINER"]:
+        API_PORT = str(cfg["CONTAINER"]["API_PORT"])
+    if API_PORT is None:
+        print("-- [ERROR] API Server port should be provided inside apimgr.yml file... --")
         sys.exit(1)
 
     # ESS Deployment GUI Server Port, default 9090
@@ -243,6 +252,7 @@ def run_container(force, is_startdeployguicont=False):
             " -v /sys/fs/cgroup:/sys/fs/cgroup:ro"
 
         container_env_details = \
+            " --env \"API_CONTAINER_PORT=" + API_PORT + "\"" + \
             " --env \"DEPLOY_FROM_GUI_CONTAINER=Y\"" + \
             " --env \"UTILITY_HOSTNAME=" + UTILITY_HOSTNAME + "\"" + \
             " --env \"UTILITY_CAMPUS_IP=" + cfg["CONTAINER"]["CAMPUS_INTERFACE_IP"] + "\"" + \

@@ -192,7 +192,7 @@ class deployguimgr_yml(object):
             # Lets deal with CAMPUS if applicable
             self.CAMPUS_INTERFACE = self.__ask_CAMPUS_INTERFACE()
 
-        if self.CAMPUS_INTERFACE is not None:
+        if self.CAMPUS_INTERFACE is not None and self.CAMPUS_INTERFACE != "":
             self.CAMPUS_IPv4 = self.__get_IP_address(
                 self.CAMPUS_INTERFACE,
                 "CAMPUS"

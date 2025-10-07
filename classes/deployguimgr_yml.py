@@ -131,7 +131,11 @@ class deployguimgr_yml(object):
     def __init__(
             self,
             verbose,
-            filename
+            filename,
+            port,
+            api_port,
+            campus_interface,
+            image_version
             ):
         self.filename = "deployguimgr.yml"
         self.verbose = verbose
@@ -145,6 +149,10 @@ class deployguimgr_yml(object):
         self.config_deployguimgr_yml = CONFIG_deployguimgr_YML
         currentDirectory = os.getcwd()
         self.IMAGE_TARBALL = filename
+        self.DEPLOY_GUI_PORT = port
+        self.API_PORT = api_port
+        self.CAMPUS_INTERFACE = campus_interface
+        self.IMAGE_VERSION = image_version
 
         self.cfg_loaded, self.cfg = self.__load_yml_file()
         if self.cfg_loaded:
@@ -180,29 +188,30 @@ class deployguimgr_yml(object):
                 " does have all the required entries."
             )
 
-        # Lets deal with CAMPUS if applicable
-        self.CAMPUS_INTERFACE = self.__ask_CAMPUS_INTERFACE()
-        if self.CAMPUS_INTERFACE != "":
-            self.CAMPUS_IPv4 = self.__get_IP_address(
-                self.CAMPUS_INTERFACE,
-                "CAMPUS"
-            )
-        elif "CAMPUS_INTERFACE" in self.container:
-            self.CAMPUS_IPv4 = self.__get_IP_address(
-                self.container['CAMPUS_INTERFACE'],
-                "CAMPUS"
-            )
-        else:
-            self.CAMPUS_IPv4 = self.container['CAMPUS_INTERFACE_IP']
-
-        if self.CAMPUS_IPv4 is None:
-            campus_interface_exist = self.__check_interface_exists("campus")
-
-            if campus_interface_exist:
-                self.run_log.debug("Campus interface exists.")
+        if self.CAMPUS_INTERFACE is None:
+            # Lets deal with CAMPUS if applicable
+            self.CAMPUS_INTERFACE = self.__ask_CAMPUS_INTERFACE()
+            if self.CAMPUS_INTERFACE != "":
+                self.CAMPUS_IPv4 = self.__get_IP_address(
+                    self.CAMPUS_INTERFACE,
+                    "CAMPUS"
+                )
+            elif "CAMPUS_INTERFACE" in self.container:
+                self.CAMPUS_IPv4 = self.__get_IP_address(
+                    self.container['CAMPUS_INTERFACE'],
+                    "CAMPUS"
+                )
             else:
-                self.run_log.error("Campus interface does not exist in this system")
-            sys.exit(4)
+                self.CAMPUS_IPv4 = self.container['CAMPUS_INTERFACE_IP']
+
+            if self.CAMPUS_IPv4 is None:
+                campus_interface_exist = self.__check_interface_exists("campus")
+
+                if campus_interface_exist:
+                    self.run_log.debug("Campus interface exists.")
+                else:
+                    self.run_log.error("Campus interface does not exist in this system")
+                sys.exit(4)
 
         # Lets deal with RAS if applicable
         if "RAS_INTERFACE" in self.container:
@@ -223,13 +232,16 @@ class deployguimgr_yml(object):
 
         # Lets deal with IMAGE_NAME if applicable
         self.IMAGE_NAME = self.container['IMAGE_NAME']
-        self.IMAGE_VERSION = self.__ask_IMAGE_VERSION()
+        if self.IMAGE_VERSION is None:
+            self.IMAGE_VERSION = self.__ask_IMAGE_VERSION()
 
         # Lets deal with API Port if applicable
-        self.API_PORT = self.__ask_API_PORT()
+        if self.API_PORT is None:
+            self.API_PORT = self.__ask_API_PORT()
 
         # Lets deal with API Port if applicable
-        self.DEPLOY_GUI_PORT = self.__ask_DEPLOY_GUI_PORT()
+        if self.DEPLOY_GUI_PORT is None:
+            self.DEPLOY_GUI_PORT = self.__ask_DEPLOY_GUI_PORT()
 
         self.run_log.debug(
             "We use UTILITY hostname to derivate names for Management. Safe option."

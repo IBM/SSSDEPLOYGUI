@@ -35,7 +35,7 @@ def parse_arguments():
         '--verbose',
         action='store_true',
         dest='verbose',
-        help='Show verbose messages in console',
+        help='Show verbose messages in console.',
         default=False)
 
     parser.add_argument(
@@ -43,12 +43,44 @@ def parse_arguments():
         '--file-name',
         action='store',
         dest='filename',
-        help='Restore from local container tar ball. SSSDEPLOYGUI.tar',
+        help='Restore from local container tar ball. (defult: SSSDEPLOYGUI.tar)',
+        default=None)
+
+    parser.add_argument(
+        '-p',
+        '--port',
+        action='store',
+        dest='port',
+        help='Deploy from GUI Server port on which server should listen. (default: 30443)',
+        default=None)
+
+    parser.add_argument(
+        '-ap',
+        '--api-port',
+        action='store',
+        dest='api_port',
+        help='SSS API Server port on which API server is listening. (default: 46443)',
+        default=None)
+
+    parser.add_argument(
+        '-i',
+        '--campus-interface',
+        action='store',
+        dest='campus_interface',
+        help='Name of the interface connected to campus network. (default: campus)',
+        default=None)
+
+    parser.add_argument(
+        '-vn',
+        '--image-version',
+        action='store',
+        dest='image_version',
+        help='API Server version to be deployed. (default: 7.0.0.0)',
         default=None)
 
     args = parser.parse_args()
 
-    return args.verbose, args.filename
+    return args.verbose, args.filename, args.port, args.api_port, args.campus_interface, args.image_version
 
 
 def copyLogs():
@@ -68,10 +100,14 @@ def copyLogs():
 
 
 def main():
-    verbose, filename = parse_arguments()
+    verbose, filename, port, api_port, campus_interface, image_version = parse_arguments()
     our_yml = deployguimgr_yml(
         verbose,
-        filename
+        filename,
+        port,
+        api_port,
+        campus_interface,
+        image_version
     )
     # We need to ensure exit before this if clean up
     our_yml.run_log.debug(

@@ -375,7 +375,7 @@ class deployguimgr_yml(object):
                     "Going to ask the user for a Campus interface name"
                 )
                 CAMPUS_INTERFACE_user = input(
-                    "Please type a Campus interfae name (campus): "
+                    "Enter the campus interface name (default: campus): "
                 )
                 if CAMPUS_INTERFACE_user == "":
                     CAMPUS_INTERFACE_user = "campus"
@@ -401,7 +401,7 @@ class deployguimgr_yml(object):
                     "Going to ask the user for a Image Version"
                 )
                 IMAGE_VERSION_user = input(
-                    "Please type a Image Version (7.0.0.0): "
+                    "Enter the image version (default: 7.0.0.0): "
                 )
                 if IMAGE_VERSION_user == "":
                     IMAGE_VERSION_user = "7.0.0.0"
@@ -432,7 +432,7 @@ class deployguimgr_yml(object):
                     "Going to ask the user for a API Port number default 46443"
                 )
                 API_PORT_user = input(
-                    "Please type a API Port default (46443): "
+                    "Enter the API port (default: 46443): "
                 )
                 if API_PORT_user == "":
                     API_PORT_user = "46443"
@@ -461,7 +461,7 @@ class deployguimgr_yml(object):
                     "Going to ask the user for a Deployment GUI Port number default 30443"
                 )
                 DEPLOY_GUI_PORT_user = input(
-                    "Please type a Deployment GUI Port default (30443): "
+                    "Enter the deployment GUI port (default: 30443): "
                 )
                 if DEPLOY_GUI_PORT_user == "":
                     DEPLOY_GUI_PORT_user = "30443"
@@ -1362,7 +1362,7 @@ class deployguimgr_yml(object):
         if self.total_errors == 0:
             config_entries_error = False
             self.run_log.info(
-                "All configurable variables checked passed"
+                "All configurable variables were validated successfully."
             )
         else:
             config_entries_error = True
@@ -1510,7 +1510,7 @@ class deployguimgr_yml(object):
             )
             sys.exit(23)
         self.run_log.info(
-            "Going to install the image. It would do no changes if already installed."
+            " The deployment GUI container image installation is about to begin. No changes are applied if the image is already installed."
         )
         try:
             self.run_log.debug(
@@ -1521,7 +1521,7 @@ class deployguimgr_yml(object):
             else:
                 deployguimgr.install_image_from_repo(input0.force)
             self.run_log.info(
-                "Image has been installed succesfully."
+                "The container image installation completed successfully."
             )
         except BaseException:
             err = sys.exc_info()[0]
@@ -1791,9 +1791,9 @@ class deployguimgr_yml(object):
             )
         if len(image_ids_to_delete) == 0:
             self.run_log.info(
-                "There are no images related to " +
+                "No images related to " +
                 img_str_find +
-                " to be deleted"
+                "  were found for deletion."
             )
             return True
         # We have at least 1 image ID to delete

@@ -51,12 +51,10 @@ RAS_IP = "10.23.16.1"
 
 STATIC_deployguimgr_YML = {
     'CONTAINER_HOSTNAME': 'utilityBareMetal-deploygui-official',
-    'CAMPUS_INTERFACE': 'campus',
     'RAS_INTERFACE': 'virbr1',
     'RAS_INTERFACE_IP': '10.23.16.1',
     'IMAGE_NAME': 'cp.icr.io/cp/scalesystem/sss_deploygui',
     'SSH_PORT': '30022',
-    'DEPLOY_GUI_PORT': '30443',
     'LOG': '/home/deployguiadmin/log',
     'BKUP': '/home/deployguiadmin/backup'
 }
@@ -64,8 +62,11 @@ STATIC_deployguimgr_YML = {
 CONFIG_deployguimgr_YML = {
     'CONTAINER_DOMAIN_NAME': 'gpfs.local',
     'UTILITY_HOSTNAME': 'utilityBareMetal',
+    'CAMPUS_INTERFACE': 'campus',
     'CAMPUS_INTERFACE_IP': '192.168.100.10',
-    'IMAGE_VERSION': '6.2.3.1'
+    'IMAGE_VERSION': '7.0.0.0',
+    'API_PORT': '46443',
+    'DEPLOY_GUI_PORT': '30443'
 }
 
 
@@ -130,7 +131,11 @@ class deployguimgr_yml(object):
     def __init__(
             self,
             verbose,
-            filename
+            filename,
+            port,
+            api_port,
+            campus_interface,
+            image_version
             ):
         self.filename = "deployguimgr.yml"
         self.verbose = verbose
@@ -144,6 +149,10 @@ class deployguimgr_yml(object):
         self.config_deployguimgr_yml = CONFIG_deployguimgr_YML
         currentDirectory = os.getcwd()
         self.IMAGE_TARBALL = filename
+        self.DEPLOY_GUI_PORT = port
+        self.API_PORT = api_port
+        self.CAMPUS_INTERFACE = campus_interface
+        self.IMAGE_VERSION = image_version
 
         self.cfg_loaded, self.cfg = self.__load_yml_file()
         if self.cfg_loaded:
@@ -179,8 +188,16 @@ class deployguimgr_yml(object):
                 " does have all the required entries."
             )
 
-        # Lets deal with CAMPUS if applicable
-        if "CAMPUS_INTERFACE" in self.container:
+        if self.CAMPUS_INTERFACE is None:
+            # Lets deal with CAMPUS if applicable
+            self.CAMPUS_INTERFACE = self.__ask_CAMPUS_INTERFACE()
+
+        if self.CAMPUS_INTERFACE is not None and self.CAMPUS_INTERFACE != "":
+            self.CAMPUS_IPv4 = self.__get_IP_address(
+                self.CAMPUS_INTERFACE,
+                "CAMPUS"
+            )
+        elif "CAMPUS_INTERFACE" in self.container:
             self.CAMPUS_IPv4 = self.__get_IP_address(
                 self.container['CAMPUS_INTERFACE'],
                 "CAMPUS"
@@ -216,7 +233,16 @@ class deployguimgr_yml(object):
 
         # Lets deal with IMAGE_NAME if applicable
         self.IMAGE_NAME = self.container['IMAGE_NAME']
-        self.IMAGE_VERSION = self.__ask_IMAGE_VERSION()
+        if self.IMAGE_VERSION is None:
+            self.IMAGE_VERSION = self.__ask_IMAGE_VERSION()
+
+        # Lets deal with API Port if applicable
+        if self.API_PORT is None:
+            self.API_PORT = self.__ask_API_PORT()
+
+        # Lets deal with API Port if applicable
+        if self.DEPLOY_GUI_PORT is None:
+            self.DEPLOY_GUI_PORT = self.__ask_DEPLOY_GUI_PORT()
 
         self.run_log.debug(
             "We use UTILITY hostname to derivate names for Management. Safe option."
@@ -272,8 +298,11 @@ class deployguimgr_yml(object):
         # We need to merge the other config parameters that are not asked
         self.merged_cfg.update({'CONTAINER_DOMAIN_NAME': self.DNS_domain})
         self.merged_cfg.update({'UTILITY_HOSTNAME': self.UTILITY_HOSTNAME})
+        self.merged_cfg.update({'CAMPUS_INTERFACE': self.CAMPUS_INTERFACE})
         self.merged_cfg.update({'CAMPUS_INTERFACE_IP': self.CAMPUS_IPv4})
         self.merged_cfg.update({'IMAGE_VERSION': self.IMAGE_VERSION})
+        self.merged_cfg.update({'API_PORT': self.API_PORT})
+        self.merged_cfg.update({'DEPLOY_GUI_PORT': self.DEPLOY_GUI_PORT})
         #self.merged_cfg.update({'RAS_INTERFACE_IP': self.RAS_IPv4})
 
         # the static entries. We should readapt the function that does this
@@ -338,6 +367,32 @@ class deployguimgr_yml(object):
         # Not a big deal yet as check is fast
         return entries_NOK
 
+    def __ask_CAMPUS_INTERFACE(self):
+        # User wants to change campus interface we change or exit if cancel
+        try:
+            while True:
+                self.run_log.debug(
+                    "Going to ask the user for a Campus interface name"
+                )
+                CAMPUS_INTERFACE_user = input(
+                    "Enter the campus interface name (default: campus): "
+                )
+                if CAMPUS_INTERFACE_user == "":
+                    CAMPUS_INTERFACE_user = "campus"
+                    break
+                else:
+                    break
+            return CAMPUS_INTERFACE_user
+        except KeyboardInterrupt:
+            print("")
+            self.run_log.error(
+                "User cancelled Campus interface name input\n"
+            )
+            self.run_log.debug(
+                "Going to terminate with RC 6"
+            )
+            sys.exit(6)
+
     def __ask_IMAGE_VERSION(self):
         # User wants to change hostname we change or exit if cancel
         try:
@@ -346,17 +401,81 @@ class deployguimgr_yml(object):
                     "Going to ask the user for a Image Version"
                 )
                 IMAGE_VERSION_user = input(
-                    "Please type a Image Version : "
+                    "Enter the image version (default: 7.0.0.0): "
                 )
-                if IMAGE_VERSION_user == "6.2.3.0" or IMAGE_VERSION_user == "6.2.3.1":
+                if IMAGE_VERSION_user == "":
+                    IMAGE_VERSION_user = "7.0.0.0"
+                    break
+                elif IMAGE_VERSION_user == "6.2.3.0" or \
+                        IMAGE_VERSION_user == "6.2.3.1" or \
+                        IMAGE_VERSION_user == "6.2.3.2" or \
+                        IMAGE_VERSION_user == "7.0.0.0":
                     break
                 else:
-                    print("\nImage name should be 6.2.3.0 or 6.2.3.1")
+                    print("Image name should be 6.2.3.0 or 6.2.3.1 or 6.2.3.2 or 7.0.0.0\n")
             return IMAGE_VERSION_user
         except KeyboardInterrupt:
             print("")
             self.run_log.error(
                 "User cancelled EMS hostname input\n"
+            )
+            self.run_log.debug(
+                "Going to terminate with RC 6"
+            )
+            sys.exit(6)
+
+    def __ask_API_PORT(self):
+        # User wants to change API Port we change or exit if cancel
+        try:
+            while True:
+                self.run_log.debug(
+                    "Going to ask the user for a API Port number default 46443"
+                )
+                API_PORT_user = input(
+                    "Enter the API port (default: 46443): "
+                )
+                if API_PORT_user == "":
+                    API_PORT_user = "46443"
+                    break
+                else:
+                    if API_PORT_user.isdigit() and len(API_PORT_user) == 5:
+                        break
+                    else:
+                        print("API port should be a 5 digit numeric number. Make the entered tcp port is free and available.\n")
+            return API_PORT_user
+        except KeyboardInterrupt:
+            print("")
+            self.run_log.error(
+                "User cancelled API port input\n"
+            )
+            self.run_log.debug(
+                "Going to terminate with RC 6"
+            )
+            sys.exit(6)
+
+    def __ask_DEPLOY_GUI_PORT(self):
+        # User wants to change API Port we change or exit if cancel
+        try:
+            while True:
+                self.run_log.debug(
+                    "Going to ask the user for a Deployment GUI Port number default 30443"
+                )
+                DEPLOY_GUI_PORT_user = input(
+                    "Enter the deployment GUI port (default: 30443): "
+                )
+                if DEPLOY_GUI_PORT_user == "":
+                    DEPLOY_GUI_PORT_user = "30443"
+                    break
+                else:
+                    if DEPLOY_GUI_PORT_user.isdigit() and len(DEPLOY_GUI_PORT_user) == 5:
+                        break
+                    else:
+                        print("Deployment GUI port should be a 5 digit numeric number. Make the entered tcp port is free and available.\n")
+            return DEPLOY_GUI_PORT_user
+        except KeyboardInterrupt:
+            print("")
+            self.run_log.error(
+                "User cancelled API port input\n"
             )
             self.run_log.debug(
                 "Going to terminate with RC 6"
@@ -1243,7 +1362,7 @@ class deployguimgr_yml(object):
         if self.total_errors == 0:
             config_entries_error = False
             self.run_log.info(
-                "All configurable variables checked passed"
+                "All configurable variables were validated successfully."
             )
         else:
             config_entries_error = True
@@ -1391,7 +1510,7 @@ class deployguimgr_yml(object):
             )
             sys.exit(23)
         self.run_log.info(
-            "Going to install the image. It would do no changes if already installed."
+            " The deployment GUI container image installation is about to begin. No changes are applied if the image is already installed."
         )
         try:
             self.run_log.debug(
@@ -1402,7 +1521,7 @@ class deployguimgr_yml(object):
             else:
                 deployguimgr.install_image_from_repo(input0.force)
             self.run_log.info(
-                "Image has been installed succesfully."
+                "The container image installation completed successfully."
             )
         except BaseException:
             err = sys.exc_info()[0]
@@ -1672,9 +1791,9 @@ class deployguimgr_yml(object):
             )
         if len(image_ids_to_delete) == 0:
             self.run_log.info(
-                "There are no images related to " +
+                "No images related to " +
                 img_str_find +
-                " to be deleted"
+                "  were found for deletion."
             )
             return True
         # We have at least 1 image ID to delete

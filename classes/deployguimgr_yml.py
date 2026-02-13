@@ -139,7 +139,7 @@ class deployguimgr_yml(object):
             ):
         self.filename = "deployguimgr.yml"
         self.verbose = verbose
-        self.output_dir = "./logs"
+        self.output_dir = "./logs/"
         self.total_errors = 0
         self.merged_cfg = {}
         self.st_time = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
@@ -401,10 +401,17 @@ class deployguimgr_yml(object):
                     "Going to ask the user for a Image Version"
                 )
                 IMAGE_VERSION_user = input(
+<<<<<<< HEAD
                     "Enter the image version (default: 7.0.0.1): "
                 )
                 if IMAGE_VERSION_user == "":
                     IMAGE_VERSION_user = "7.0.0.1"
+=======
+                    "Enter the image version (default: 7.0.1.0): "
+                )
+                if IMAGE_VERSION_user == "":
+                    IMAGE_VERSION_user = "7.0.1.0"
+>>>>>>> f856b47506a63cafa78f97b551e1197587f93fcc
                     break
                 elif IMAGE_VERSION_user == "6.2.3.0" or \
                         IMAGE_VERSION_user == "6.2.3.1" or \
@@ -413,7 +420,11 @@ class deployguimgr_yml(object):
                         IMAGE_VERSION_user == "7.0.0.1" :
                     break
                 else:
+<<<<<<< HEAD
                     print("Image name should be 6.2.3.0 or 6.2.3.1 or 6.2.3.2 or 7.0.0.0 or 7.0.0.1\n")
+=======
+                    print("Image name should be 6.2.3.0 or 6.2.3.1 or 6.2.3.2 or 7.0.0.0 or 7.0.1.0\n")
+>>>>>>> f856b47506a63cafa78f97b551e1197587f93fcc
             return IMAGE_VERSION_user
         except KeyboardInterrupt:
             print("")

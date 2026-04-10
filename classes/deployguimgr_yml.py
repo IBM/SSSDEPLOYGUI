@@ -64,7 +64,7 @@ CONFIG_deployguimgr_YML = {
     'UTILITY_HOSTNAME': 'utilityBareMetal',
     'CAMPUS_INTERFACE': 'campus',
     'CAMPUS_INTERFACE_IP': '192.168.100.10',
-    'IMAGE_VERSION': '7.0.0.1',
+    'IMAGE_VERSION': '7.0.0.2',
     'API_PORT': '46443',
     'DEPLOY_GUI_PORT': '30443'
 }
@@ -401,30 +401,20 @@ class deployguimgr_yml(object):
                     "Going to ask the user for a Image Version"
                 )
                 IMAGE_VERSION_user = input(
-<<<<<<< HEAD
-                    "Enter the image version (default: 7.0.0.1): "
+                    "Enter the image version (default: 7.0.0.2): "
                 )
                 if IMAGE_VERSION_user == "":
-                    IMAGE_VERSION_user = "7.0.0.1"
-=======
-                    "Enter the image version (default: 7.0.1.0): "
-                )
-                if IMAGE_VERSION_user == "":
-                    IMAGE_VERSION_user = "7.0.1.0"
->>>>>>> f856b47506a63cafa78f97b551e1197587f93fcc
+                    IMAGE_VERSION_user = "7.0.0.2"
                     break
                 elif IMAGE_VERSION_user == "6.2.3.0" or \
                         IMAGE_VERSION_user == "6.2.3.1" or \
                         IMAGE_VERSION_user == "6.2.3.2" or \
                         IMAGE_VERSION_user == "7.0.0.0" or \
-                        IMAGE_VERSION_user == "7.0.0.1" :
+                        IMAGE_VERSION_user == "7.0.0.1" or \
+                        IMAGE_VERSION_user == "7.0.0.2" :
                     break
                 else:
-<<<<<<< HEAD
-                    print("Image name should be 6.2.3.0 or 6.2.3.1 or 6.2.3.2 or 7.0.0.0 or 7.0.0.1\n")
-=======
-                    print("Image name should be 6.2.3.0 or 6.2.3.1 or 6.2.3.2 or 7.0.0.0 or 7.0.1.0\n")
->>>>>>> f856b47506a63cafa78f97b551e1197587f93fcc
+                    print("Image name should be 6.2.3.0 or 6.2.3.1 or 6.2.3.2 or 7.0.0.0 or 7.0.0.1 or 7.0.0.2\n")
             return IMAGE_VERSION_user
         except KeyboardInterrupt:
             print("")

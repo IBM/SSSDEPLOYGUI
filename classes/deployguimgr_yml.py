@@ -69,6 +69,15 @@ CONFIG_deployguimgr_YML = {
     'DEPLOY_GUI_PORT': '30443'
 }
 
+SUPPORTED_VERSIONS: set[str] = {
+    # 7.0.x.x
+    "7.0.1.0", "7.0.0.0",
+
+    # 6.2.3.x LTS
+    "6.2.3.5", "6.2.3.4", "6.2.3.3", "6.2.3.2", "6.2.3.1", "6.2.3.0",
+}
+
+DEFAULT_VERSION = "7.0.1.0"
 
 class deployguimgr_yml(object):
     """
@@ -400,19 +409,23 @@ class deployguimgr_yml(object):
                 self.run_log.debug(
                     "Going to ask the user for a Image Version"
                 )
-                IMAGE_VERSION_user = input(
-                    "Enter the image version (default: 7.0.1.0): "
+                print(
+                    f"\nSupported versions are: "
+                    f"{', '.join(sorted(SUPPORTED_VERSIONS))}"
+                )
+                IMAGE_VERSION_user: str = input(
+                    "Enter the image version (default: " + DEFAULT_VERSION + "): "
                 )
                 if IMAGE_VERSION_user == "":
-                    IMAGE_VERSION_user = "7.0.1.0"
+                    IMAGE_VERSION_user = DEFAULT_VERSION
                     break
-                elif IMAGE_VERSION_user == "6.2.3.0" or \
-                        IMAGE_VERSION_user == "6.2.3.1" or \
-                        IMAGE_VERSION_user == "6.2.3.2" or \
-                        IMAGE_VERSION_user == "7.0.0.0":
+                elif IMAGE_VERSION_user in SUPPORTED_VERSIONS:
                     break
                 else:
-                    print("Image name should be 6.2.3.0 or 6.2.3.1 or 6.2.3.2 or 7.0.0.0 or 7.0.1.0\n")
+                    print(
+                        f"Supported versions are: "
+                        f"{', '.join(sorted(SUPPORTED_VERSIONS))}\n"
+                    )
             return IMAGE_VERSION_user
         except KeyboardInterrupt:
             print("")

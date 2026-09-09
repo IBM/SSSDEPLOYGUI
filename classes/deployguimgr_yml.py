@@ -181,8 +181,8 @@ class deployguimgr_yml(object):
         else:
             self.run_log.debug(f"The file {self.filename} does have all the required entries.")
 
+        # Lets deal with CAMPUS if applicable
         if self.CAMPUS_INTERFACE is None:
-            # Lets deal with CAMPUS if applicable
             self.CAMPUS_INTERFACE = self.__ask_CAMPUS_INTERFACE()
 
         if self.CAMPUS_INTERFACE is not None and self.CAMPUS_INTERFACE != "":
@@ -438,7 +438,6 @@ class deployguimgr_yml(object):
             self.run_log.debug("Going to terminate with RC 12")
             sys.exit(12)
 
-
     def __checkContNotResolvable(self, containerShort):
         containerLong = f"{containerShort}.{self.DNS_domain}"
         self.run_log.debug(f"Container short {containerShort} converted to FQDN {containerLong}")
@@ -478,7 +477,6 @@ class deployguimgr_yml(object):
         except socket.gaierror:
             self.run_log.debug(f"The container long name {containerLong} does not resolve any IP address")
         return canResolve
-
 
     def __get_UTILITY_HOSTNAME(self):
         self.run_log.debug("Going to query UTILITY hostname")
@@ -880,29 +878,17 @@ class deployguimgr_yml(object):
         # Every start we check that not running already, if not running we delete the image
         contIsUp = self.__alreadyUP("deploygui-official")
         if contIsUp:
-            self.run_log.error(
-                "We cannot start the Deployment GUI container as seems that is already UP."
-            )
-            self.run_log.debug(
-                "Going to exit with RC=9"
-            )
+            self.run_log.error("We cannot start the Deployment GUI container as seems that is already UP.")
+            self.run_log.debug("Going to exit with RC=9")
             sys.exit(9)
         else:
-            self.run_log.debug(
-                "Container is not UP, we will delete the image before start."
-            )
+            self.run_log.debug("Container is not UP, we will delete the image before start.")
             imgDeleted = self.__delete_image("deploygui-official")
             if imgDeleted:
-                self.run_log.debug(
-                    "Deployment GUI image has been deleted, we continue."
-                )
+                self.run_log.debug("Deployment GUI image has been deleted, we continue.")
             else:
-                self.run_log.error(
-                    "Could not delete container image."
-                )
-                self.run_log.debug(
-                    "Going to exit with RC=10"
-                )
+                self.run_log.error("Could not delete container image.")
+                self.run_log.debug("Going to exit with RC=10")
                 sys.exit(10)
         # Users wants that we prep the container
         # This requires deployguimgr -i, deployguimgr -n
@@ -1076,7 +1062,6 @@ class deployguimgr_yml(object):
             self.run_log.error(f"Configured RAS IP {self.RAS_IPv4} does not belong to RAS netblock {RAS_NETBLOCK}")
             self.run_log.debug("Going to exit with RC=7")
             sys.exit(7)
-
 
     def __delete_image(self, img_str_find):
         images_list = self.__get_installed_containers()

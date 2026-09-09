@@ -100,12 +100,9 @@ def deployguimgr_EOL_warning():
         time.sleep(2)
         sys.exit(1)
     elif ALLOW_DEPLOYGUIMGR == "1":
-        print(
-            "-- [WARNING] You should not run deployguimgr directly, use startContainer instead")
-        print(
-            "-- [WARNING] deployguimgr it is going to be depreciated in a future release")
-        print(
-            "-- [WARNING] Be aware that any error you encounter you need to reproduce running startContainer")
+        print("-- [WARNING] You should not run deployguimgr directly, use startContainer instead")
+        print("-- [WARNING] deployguimgr it is going to be depreciated in a future release")
+        print("-- [WARNING] Be aware that any error you encounter you need to reproduce running startContainer")
         time.sleep(5)
     else:
         print("-- [ERROR] You cannot run deployguimgr directly, use startContainer instead")

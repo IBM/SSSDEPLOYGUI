@@ -53,7 +53,7 @@ STATIC_deployguimgr_YML = {
     'CONTAINER_HOSTNAME': 'utilityBareMetal-deploygui-official',
     'RAS_INTERFACE': 'virbr1',
     'RAS_INTERFACE_IP': '10.23.16.1',
-    'IMAGE_NAME': 'cp.stg.icr.io/cp/scalesystem/sss_deploygui',
+    'IMAGE_NAME': 'preprod.icr.io/cp/scalesystem/sss_deploygui',
     'SSH_PORT': '30022',
     'LOG': '/home/deployguiadmin/log',
     'BKUP': '/home/deployguiadmin/backup'
@@ -71,13 +71,13 @@ CONFIG_deployguimgr_YML = {
 
 SUPPORTED_VERSIONS: set[str] = {
     # 7.0.x.x
-    "7.0.1.1", "7.0.1.0", "7.0.0.0",
+    "7.0.2.0", "7.0.1.1", "7.0.1.0", "7.0.0.0",
 
     # 6.2.3.x LTS
     "6.2.3.6", "6.2.3.5", "6.2.3.4", "6.2.3.3", "6.2.3.2", "6.2.3.1", "6.2.3.0",
 }
 
-DEFAULT_VERSION = "7.0.1.0"
+DEFAULT_VERSION = "7.0.2.0"
 
 class deployguimgr_yml(object):
     """

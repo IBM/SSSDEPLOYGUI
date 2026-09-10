@@ -52,7 +52,7 @@ STATIC_deployguimgr_YML: dict[str, str] = {
     'CONTAINER_HOSTNAME': 'utilityBareMetal-deploygui-official',
     'RAS_INTERFACE': 'virbr1',
     'RAS_INTERFACE_IP': '10.23.16.1',
-    'IMAGE_NAME': 'preprod.icr.io/cp/scalesystem/sss_deploygui',
+    'IMAGE_NAME': 'preprod.icr.io/cp/scale-devops/scalesystem/sss_deploygui',
     'SSH_PORT': '30022',
     'LOG': '/home/deployguiadmin/log',
     'BKUP': '/home/deployguiadmin/backup'
@@ -143,7 +143,8 @@ class deployguimgr_yml(object):
             port,
             api_port,
             campus_interface,
-            image_version
+            image_version,
+            delete=False
             ):
         self.filename = "deployguimgr.yml"
         self.verbose = verbose
@@ -180,6 +181,9 @@ class deployguimgr_yml(object):
             sys.exit(13)
         else:
             self.run_log.debug(f"The file {self.filename} does have all the required entries.")
+
+        if delete:
+            return
 
         # Lets deal with CAMPUS if applicable
         if self.CAMPUS_INTERFACE is None:
@@ -989,6 +993,8 @@ class deployguimgr_yml(object):
         )
 
         try:
+            self.run_log.debug("Going to delete existing deployguimgr container and service")
+            deployguimgr.delete_container()
             self.run_log.debug("Going to run deployguimgr runcont")
             deployguimgr.run_container(input0, True)
         except BaseException:
@@ -1000,6 +1006,47 @@ class deployguimgr_yml(object):
             self.run_log.debug("Going to terminate with RC 24")
             sys.exit(24)
         self.run_log.debug("We are back from deployguimgr runcont normal mode")
+        return True
+
+    def delete_container(self):
+        """Delete the Deployment GUI container and its systemd service unit."""
+        try:
+            self.run_log.debug("Going to import deployguimgr")
+            import classes.deployguimgr as deployguimgr
+            self.run_log.debug("Imported deployguimgr")
+        except ImportError:
+            self.run_log.error("Cannot import deployguimgr")
+            self.run_log.debug("Going to terminate with RC 22")
+            sys.exit(22)
+        input0 = argparse.Namespace(
+            config_file='deployguimgr.yml',
+            force=False,
+            image_file_name=None,
+            install=False,
+            create_network=False,
+            network_name="ess_network",
+            run=False,
+            delete=True
+            )
+        self.run_log.debug("Going to readconf with deployguimgr")
+        try:
+            deployguimgr.readconf(input0)
+            self.run_log.debug("Success readconf with deployguimgr")
+        except BaseException:
+            self.run_log.error("Could not readconf with deployguimgr")
+            self.run_log.debug("Going to terminate with RC 23")
+            sys.exit(23)
+        try:
+            self.run_log.debug("Going to delete deployguimgr container and service")
+            deployguimgr.delete_container()
+            self.run_log.debug("Delete completed")
+        except BaseException:
+            self.run_log.error(
+                "The container delete returned a non zero exit. "
+                "Check the messages above."
+            )
+            self.run_log.debug("Going to terminate with RC 25")
+            sys.exit(25)
         return True
 
     def __podman_bin_exists(self):

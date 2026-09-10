@@ -11,10 +11,15 @@ The Deploy from GUI container provides a browser-based interface for deploying a
 ## Quick start
 
 ```bash
-./startDeployGUIContainer
+# Pull image from IBM Container Registry
+./startDeployGUIContainer -vn 7.0.2.0
+
+# Or install from a local tar file
+./startDeployGUIContainer -f SSSDEPLOYGUI.tar
 ```
 
 This is the **only script you need to run**. It auto-detects system settings, writes a sanitised `deployguimgr.yml`, and starts the container.
+Either `-f FILE` (local tar) or `-vn VERSION` (pull from ICR) must be supplied.
 
 > **Prerequisite:** The SSS API Server (SSSAPI) must already be running before you start the Deploy from GUI container.
 
@@ -26,39 +31,45 @@ This is the **only script you need to run**. It auto-detects system settings, wr
 ./startDeployGUIContainer [options]
 
 Options:
-  -v, --verbose              Display verbose messages in the console.
-  -f, --file-name FILE       Restore the container from a local tar file.
-                             (default: SSSDEPLOYGUI.tar)
-  -p, --port PORT            Port on which the Deploy from GUI server listens.
-                             (default: 30443)
-  -ap, --api-port PORT       Port on which the API server listens.
-                             (default: 46443)
-  -i, --campus-interface IF  Name of the interface connected to the campus
-                             network. (default: campus)
-  -vn, --image-version VER   Deploy GUI image version to deploy.
-                             (default: 7.0.2.0)
+  -d, --delete                    Stop and delete the container and its
+                                  systemd service unit.
+  -v, --verbose                   Display verbose messages in the console.
+
+Install source (mutually exclusive):
+  -f,  --file-name FILE           Restore the container from a local tar file.
+                                  (default: SSSDEPLOYGUI.tar)
+  -vn, --image-version VERSION    Deploy GUI image version to pull from ICR.
+                                  (default: 7.0.1.0)
+
+Options (start only, not valid with -d/--delete):
+  -p,  --port PORT                Port on which the Deploy from GUI server
+                                  listens. (default: 30443)
+  -ap, --api-port PORT            Port on which the API server listens.
+                                  (default: 46443)
+  -i,  --campus-interface IFACE   Name of the interface connected to the
+                                  campus network. (default: campus)
 ```
 
 ### Examples
 
 ```bash
-# Start using default settings (pulls image from IBM registry)
-./startDeployGUIContainer
+# Pull a specific version from IBM Container Registry
+./startDeployGUIContainer -vn 7.0.2.0
 
-# Start from a local tarball
+# Install from a local tarball
 ./startDeployGUIContainer -f SSSDEPLOYGUI.tar
 
-# Override the GUI listen port
-./startDeployGUIContainer -p 30443
+# Pull from ICR and override the GUI listen port
+./startDeployGUIContainer -vn 7.0.2.0 -p 30443
 
-# Override both the GUI port and the API port it connects to
-./startDeployGUIContainer -p 30443 -ap 46443
+# Pull from ICR, override both the GUI port and the API port it connects to
+./startDeployGUIContainer -vn 7.0.2.0 -p 30443 -ap 46443
 
-# Override the image version
-./startDeployGUIContainer -vn 7.0.1.1
+# Pull from ICR with verbose output
+./startDeployGUIContainer -vn 7.0.2.0 -v
 
-# Verbose output
-./startDeployGUIContainer -v
+# Delete the container and its systemd service
+./startDeployGUIContainer -d
 ```
 
 ---
@@ -110,7 +121,7 @@ podman login cp.icr.io --username cp --password <API_Key>
 The Deploy from GUI image is pulled from:
 
 ```
-preprod.icr.io/cp/scalesystem/sss_deploygui
+preprod.icr.io/cp/scale-devops/scalesystem/sss_deploygui
 ```
 
 ---
@@ -136,7 +147,7 @@ CONTAINER:
     API_PORT: 46443                    # API Server port this container connects to
     SSH_PORT: 30022                    # SSH port (development only)
 
-    IMAGE_NAME: preprod.icr.io/cp/scalesystem/sss_deploygui
+    IMAGE_NAME: preprod.icr.io/cp/scale-devops/scalesystem/sss_deploygui
     IMAGE_VERSION: 7.0.2.0
 
     LOG:  /home/deployguiadmin/log

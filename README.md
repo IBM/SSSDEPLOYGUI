@@ -196,7 +196,7 @@ SSSDEPLOYGUI/
 ├── startDeployGUIContainer  ← entry point (run this)
 ├── deployguimgr.yml         ← configuration file (auto-generated / editable)
 ├── deployguimgr             ← legacy low-level manager (deprecated, use startDeployGUIContainer)
-├── utilityBareMeral_hosts   ← /etc/hosts template for the Utility node
+├── utilityBareMetal_hosts   ← /etc/hosts template for the Utility node
 └── classes/
     └── deployguimgr_yml.py  ← config + container lifecycle class
 ```

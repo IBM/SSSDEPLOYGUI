@@ -12,7 +12,7 @@ The Deploy from GUI container provides a browser-based interface for deploying a
 
 ```bash
 # Pull image from IBM Container Registry
-./startDeployGUIContainer -vn 7.0.2.0
+./startDeployGUIContainer -vn 7.0.1.2
 
 # Or install from a local tar file
 ./startDeployGUIContainer -f SSSDEPLOYGUI.tar
@@ -39,7 +39,7 @@ Install source (mutually exclusive):
   -f,  --file-name FILE           Restore the container from a local tar file.
                                   (default: SSSDEPLOYGUI.tar)
   -vn, --image-version VERSION    Deploy GUI image version to pull from ICR.
-                                  (default: 7.0.1.0)
+                                  (default: 7.0.1.2)
 
 Options (start only, not valid with -d/--delete):
   -p,  --port PORT                Port on which the Deploy from GUI server
@@ -54,19 +54,19 @@ Options (start only, not valid with -d/--delete):
 
 ```bash
 # Pull a specific version from IBM Container Registry
-./startDeployGUIContainer -vn 7.0.2.0
+./startDeployGUIContainer -vn 7.0.1.2
 
 # Install from a local tarball
 ./startDeployGUIContainer -f SSSDEPLOYGUI.tar
 
 # Pull from ICR and override the GUI listen port
-./startDeployGUIContainer -vn 7.0.2.0 -p 30443
+./startDeployGUIContainer -vn 7.0.1.2 -p 30443
 
 # Pull from ICR, override both the GUI port and the API port it connects to
-./startDeployGUIContainer -vn 7.0.2.0 -p 30443 -ap 46443
+./startDeployGUIContainer -vn 7.0.1.2 -p 30443 -ap 46443
 
 # Pull from ICR with verbose output
-./startDeployGUIContainer -vn 7.0.2.0 -v
+./startDeployGUIContainer -vn 7.0.1.2 -v
 
 # Delete the container and its systemd service
 ./startDeployGUIContainer -d
@@ -148,7 +148,7 @@ CONTAINER:
     SSH_PORT: 30022                    # SSH port (development only)
 
     IMAGE_NAME: cp.icr.io/cp/scalesystem/sss_deploygui
-    IMAGE_VERSION: 7.0.2.0
+    IMAGE_VERSION: 7.0.1.2
 
     LOG:  /home/deployguiadmin/log
     BKUP: /home/deployguiadmin/backup
